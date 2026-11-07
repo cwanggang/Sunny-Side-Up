@@ -34,6 +34,7 @@ It gently encourages the reader to reach out to a friend.
 Rules:
 - One sentence, under 90 characters. Casual, warm, a little playful.
 - Name the friend. You may mention the circle name.
+- Never use pronouns for the friend (no he, she, him, her, his, hers, they, them). Use their name.
 - Suggest a tiny action (send an egg, a photo, a voice memo, a quick text) or just catching up.
 - Never imply anything is wrong. Never mention mood, health, worry, absence, silence,
   being quiet, being alone, or how long it has been.
@@ -43,6 +44,8 @@ Vary the wording; don't always start the same way.`;
 const NudgeSchema = z.object({ message: z.string() });
 
 // Words that would hint at *why* someone was nudged, or label them. Any hit -> fallback text.
+// Pronouns for the friend: we don't know anyone's pronouns, so the name is always used instead.
+const PRONOUNS = /\b(he|she|him|her|his|hers)\b/i;
 const BANNED = /\b(lonely|alone|depress\w*|sad|worr\w*|quiet|silen\w*|absent|missing|okay\?|ok\?|check(ing)? (in|on)|haven'?t heard|been a while)\b/i;
 
 const NUDGE_FALLBACKS = [
@@ -69,7 +72,7 @@ export async function wordNudge(input: { firstName: string; circleName: string }
     });
     if (res.stop_reason === 'refusal') return fallbackNudge(firstName);
     const text = res.parsed_output?.message.replace(/["“”]/g, '').trim();
-    if (!text || text.length > 120 || BANNED.test(text) || !text.includes(firstName)) {
+    if (!text || text.length > 120 || BANNED.test(text) || PRONOUNS.test(text) || !text.includes(firstName)) {
       return fallbackNudge(firstName);
     }
     return text;

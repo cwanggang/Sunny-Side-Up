@@ -48,7 +48,7 @@ const cleanup = [];
 try {
   // ---- circles & membership ----
   let r = await maya.from('circles').select('id');
-  check('Maya sees only her circle', r.data?.length === 1 && r.data[0].id === SUNNY, JSON.stringify(r));
+  check("Maya sees her circle(s), not Riley's", r.data?.some((c) => c.id === SUNNY) && !r.data.some((c) => c.id === RILEYS), JSON.stringify(r));
   r = await maya.from('circles').select('id').eq('id', RILEYS);
   check("Maya can't read Riley's circle", denied(r));
   r = await riley.from('circle_members').select('user_id').eq('circle_id', SUNNY);
@@ -63,15 +63,13 @@ try {
   // ---- profiles ----
   r = await maya.from('circle_profiles').select('*').eq('circle_id', SUNNY);
   check('circle_profiles shows 4 members', r.data?.length === 4, JSON.stringify(r.error ?? r.data?.length));
-  check('circle_profiles has no push token', r.data && !('expo_push_token' in (r.data[0] ?? {})));
+  check('circle_profiles has only safe fields', r.data && Object.keys(r.data[0] ?? {}).sort().join() === 'avatar_path,birthday,circle_id,display_name,id,joined_at,role');
   r = await riley.from('circle_profiles').select('id').eq('circle_id', SUNNY);
   check("Riley can't see Sunny members' profiles", denied(r));
   r = await maya.from('profiles').select('id');
   check('profiles base table: only self', r.data?.length === 1 && r.data[0].id === ID.maya);
-  r = await maya.from('profiles').update({ expo_push_token: 'ExponentPushToken[x]' }).eq('id', ID.maya);
-  check("Can't write push token directly", !!r.error);
-  r = await maya.rpc('register_push_token', { token: 'not-a-token' });
-  check('register_push_token rejects junk', !!r.error);
+  r = await maya.from('profiles').update({ id: ID.sam }).eq('id', ID.maya);
+  check("Can't change own profile id", !!r.error);
 
   // ---- signals and server-only tables ----
   r = await maya.from('daily_signals').select('*');
@@ -85,12 +83,12 @@ try {
 
   // ---- nudges ----
   r = await maya.from('my_nudges').select('*');
-  check('Maya sees her nudge', r.data?.length === 1, JSON.stringify(r.error ?? r.data));
+  check('Maya sees her seeded nudge', r.data?.some((n) => n.id === '00000000-0000-4000-a000-000000000001'), JSON.stringify(r.error ?? r.data));
   check('my_nudges has no reason_kind', r.data && !('reason_kind' in (r.data[0] ?? {})));
   r = await maya.from('nudges').select('reason_kind');
   check('reason_kind never selectable', !!r.error);
-  r = await sam.from('my_nudges').select('*');
-  check('Sam (nudge subject) sees nothing', denied(r));
+  r = await sam.from('my_nudges').select('*').eq('about_user_id', ID.sam);
+  check('Sam never sees nudges about himself', denied(r));
   r = await maya.from('my_nudges').update({ message: 'edited' }).eq('id', '00000000-0000-4000-a000-000000000001');
   check("Maya can't edit nudge text", !!r.error);
 
@@ -124,6 +122,26 @@ try {
   check("Jordan can't react to directed text", !!r.error);
   r = await sam.from('reactions').insert({ interaction_id: dmId, user_id: ID.sam, emoji: '❤️' });
   check('Sam reacts to directed text', !r.error, r.error?.message);
+
+  // ---- notifications (free-Apple-ID pivot) ----
+  r = await sam.from('notifications').select('id, type, body').eq('target_id', dmId);
+  check('Sam got a notification for the directed text', r.data?.length === 1 && r.data[0].type === 'interaction', JSON.stringify(r.error ?? r.data));
+  r = await jordan.from('notifications').select('id').eq('target_id', dmId);
+  check('Jordan got no notification for it', denied(r));
+  r = await jordan.from('notifications').select('id').eq('target_id', eggId);
+  check('Jordan got one for the circle egg', r.data?.length === 1);
+  r = await maya.from('notifications').select('id').eq('target_id', eggId);
+  check('Sender (Maya) got none for her own egg', denied(r));
+  r = await riley.from('notifications').select('id');
+  check("Riley can't read others' notifications", denied(r));
+  r = await jordan.from('notifications').update({ read_at: new Date().toISOString() }).eq('target_id', eggId).select('id');
+  check('Jordan marks his notification read', r.data?.length === 1, JSON.stringify(r.error));
+  r = await jordan.from('notifications').update({ body: 'edited' }).eq('target_id', eggId);
+  check("Jordan can't edit notification text", !!r.error);
+  r = await maya.from('notifications').insert({ user_id: ID.sam, type: 'nudge', circle_id: SUNNY, title: 'x', body: 'fake nudge' });
+  check("Maya can't create a notification", !!r.error);
+  r = await maya.rpc('create_notifications', { p_rows: [] });
+  check('create_notifications not callable by clients', !!r.error);
 
   // ---- storage ----
   const photoId = crypto.randomUUID();

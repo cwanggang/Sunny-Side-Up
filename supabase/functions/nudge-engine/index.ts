@@ -4,8 +4,9 @@
 //   1. Drift nudges: for each member whose latest drift score is_quiet, ask one friend to reach out.
 //   2. Cover nudges: each other member has a COVER_RATE chance of a friendly nudge about them too,
 //      so a nudge is never evidence that someone went quiet (plan §9.4).
-// Both kinds are worded by the SAME call (wordNudge with first name + circle name only), pushed the
-// same way, and stored the same way; only the server-side reason_kind differs.
+// Both kinds are worded by the SAME call (wordNudge with first name + circle name only), and get an
+// identical `notifications` row (type 'nudge', title = circle name, body = message, target = nudge id);
+// only the server-side reason_kind differs (plan §9.4).
 //
 // Rules: never about or to a paused user (§9.6); never about someone with auto_nudges off;
 // recipients rotate (least recently nudged first) and skip anyone nudged in the last 48 h;
@@ -14,7 +15,7 @@
 // demo=true: re-scores drift now and runs only the demo circle (B4.8), with no cover randomness
 // so the demo is predictable. The response never says which nudges are drift vs cover.
 import { adminClient } from '../_shared/supabase.ts';
-import { sendPush, type PushMessage } from '../_shared/push.ts';
+import { notify } from '../_shared/notify.ts';
 import { authorizeJob, json } from '../_shared/http.ts';
 import { wordNudge } from '../_shared/llm.ts';
 import { DEMO_CIRCLE_ID } from '../_shared/demo.ts';
@@ -55,7 +56,7 @@ Deno.serve(async (req) => {
   const [scoresQ, membersQ, profilesQ, consentsQ, circlesQ, recentQ] = await Promise.all([
     scoresSel,
     membersSel,
-    db.from('profiles').select('id, display_name, expo_push_token'),
+    db.from('profiles').select('id, display_name'),
     db.from('consents').select('user_id, auto_nudges, paused_until'),
     db.from('circles').select('id, name'),
     db.from('nudges').select('circle_id, recipient_id, about_user_id, sent_at')
@@ -146,23 +147,23 @@ Deno.serve(async (req) => {
     inserted = data ?? [];
   }
 
-  const messages: PushMessage[] = inserted.flatMap((n) => {
-    const token = profile.get(n.recipient_id)?.expo_push_token as string | null | undefined;
-    return token
-      ? [{
-        to: token,
-        title: circleName.get(n.circle_id) ?? 'Sunny Side Up',
-        body: n.message,
-        data: { type: 'nudge' as const, circle_id: n.circle_id, target_id: n.id },
-        sound: 'default' as const,
-      }]
-      : [];
-  });
-  const push = await sendPush(messages);
+  let notified = 0;
+  try {
+    notified = await notify(inserted.map((n) => ({
+      user_id: n.recipient_id,
+      type: 'nudge' as const,
+      circle_id: n.circle_id,
+      target_id: n.id,
+      title: circleName.get(n.circle_id) ?? 'Sunny Side Up',
+      body: n.message,
+    })));
+  } catch (err) {
+    return json({ error: String(err) }, 500);
+  }
 
   const response: DemoRunResponse = {
     ok: true,
-    summary: `${inserted.length} nudge${inserted.length === 1 ? '' : 's'} sent (${push.sent} pushes delivered)`,
+    summary: `${inserted.length} nudge${inserted.length === 1 ? '' : 's'} sent (${notified} notifications)`,
   };
   return json(response);
 });

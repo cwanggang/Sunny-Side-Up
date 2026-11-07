@@ -421,10 +421,7 @@ enabled = true
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
 
-# Webhook-only functions: called by our pg_net triggers with x-webhook-secret, not a user JWT.
-[functions.on-interaction]
-verify_jwt = false
-
+# Job / webhook functions: called by pg_net (x-webhook-secret) or the demo screen (x-demo-key), not a user JWT.
 [functions.media-cleanup]
 verify_jwt = false
 
