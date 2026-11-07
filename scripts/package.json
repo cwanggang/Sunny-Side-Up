@@ -1,0 +1,13 @@
+{
+  "name": "sunny-side-up-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Developer B scripts: RLS tests, demo triggers. Separate from the app's package.json.",
+  "scripts": {
+    "rls-test": "node --env-file=.env rls-test.mjs",
+    "seed-media": "node --env-file=.env seed-media.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0"
+  }
+}
