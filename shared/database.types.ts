@@ -706,6 +706,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      demo_reseed: { Args: { p_emails?: string[] }; Returns: Json }
       join_circle: {
         Args: { invite_code: string }
         Returns: {
@@ -725,6 +726,8 @@ export type Database = {
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
       register_push_token: { Args: { token: string }; Returns: undefined }
+      run_drift: { Args: { p_day?: string }; Returns: Json }
+      user_media_paths: { Args: { p_user_id: string }; Returns: string[] }
       verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
     }
     Enums: {
