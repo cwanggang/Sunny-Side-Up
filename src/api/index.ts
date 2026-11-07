@@ -63,5 +63,7 @@ export const {
 } = api;
 
 export { USE_MOCKS } from './config';
+// A4.7 demo controls (Developer B handoff); only app/(dev)/demo uses these.
+export { demoKeyConfigured, describeDemoAction, useDemoAction, type DemoAction } from './demo';
 export { ApiProvider } from './provider';
 export type * from './types';

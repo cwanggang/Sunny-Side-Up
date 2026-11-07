@@ -7,7 +7,8 @@
     "rls-test": "node --env-file=.env rls-test.mjs",
     "seed-media": "node --env-file=.env seed-media.mjs",
     "notify-test": "node notify-test.mjs",
-    "upload-demo-photos": "node --env-file=.env upload-demo-photos.mjs"
+    "upload-demo-photos": "node --env-file=.env upload-demo-photos.mjs",
+    "demo-status": "cd .. && npx supabase db query --remote --read-only -f scripts/demo-status.sql"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0"
