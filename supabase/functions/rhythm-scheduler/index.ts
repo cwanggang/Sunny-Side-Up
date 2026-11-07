@@ -1,21 +1,21 @@
 // B3.1–B3.3: hourly rhythm scheduler (pg_cron -> pg_net -> here).
-//   B3.1 Sunday share: on Sunday from 10:00 local, push "share your week" once per user/circle/week.
-//   B3.2 Spotlight: keep spotlight_days filled 7 days ahead; from 09:00 local, push today's person.
+//   B3.1 Sunday share: on Sunday from 10:00 local, notify "share your week" once per user/circle/week.
+//   B3.2 Spotlight: keep spotlight_days filled 7 days ahead; from 09:00 local, notify today's person.
 //        Quiet members are rotated in a little sooner (never visible anywhere).
 //   B3.3 Birthdays (day before + day of) and moments (morning of occurs_on), from 09:00 local.
 //        Day-of birthday and moment reminders are also stored as nudges for the Nudges tab.
-// All pushes go out between 09:00 and 21:00 in the *recipient's* timezone, once each
-// (claimed atomically in scheduler_log). Paused users get no pushes, and no reminders are
-// sent about paused users (plan §9.6).
+// Everything is a `notifications` row (plan §3.0: no remote push), created between 09:00 and 21:00
+// in the *recipient's* timezone, once each (claimed atomically in scheduler_log). Paused users get
+// none, and no reminders are sent about paused users (plan §9.6).
 //
 // Auth: the cron webhook secret, or the demo key. Option `now=<iso>` (query string with the demo
 // key, JSON body via webhook) pretends it's that time and skips the once-only check, so the demo
 // can be re-run.
 import { adminClient } from '../_shared/supabase.ts';
-import { sendPush, type PushMessage } from '../_shared/push.ts';
+import { notify } from '../_shared/notify.ts';
 import { authorizeJob, json } from '../_shared/http.ts';
 import { addDays, isBirthdayOn, localTime } from '../_shared/time.ts';
-import type { DemoRunResponse, PushPayload } from '../_shared/contract.ts';
+import type { DemoRunResponse, NotificationType } from '../_shared/contract.ts';
 
 const FIRST_HOUR = 9;
 const SUNDAY_HOUR = 10;
@@ -23,12 +23,12 @@ const LAST_HOUR = 21; // exclusive
 const SPOTLIGHT_DAYS_AHEAD = 7;
 
 interface Member { circle_id: string; user_id: string; joined_at: string }
-interface Profile { id: string; display_name: string; birthday: string | null; timezone: string; expo_push_token: string | null }
+interface Profile { id: string; display_name: string; birthday: string | null; timezone: string }
 interface Candidate {
   log: { kind: string; user_id: string; circle_id: string; period_key: string };
   title: string;
   body: string;
-  data: PushPayload;
+  data: { type: NotificationType; circle_id: string; target_id?: string };
   nudge?: { about_user_id: string; reason_kind: 'birthday' | 'moment' };
 }
 
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
   const [circlesQ, membersQ, profilesQ, consentsQ, spotQ, momentsQ, quietQ] = await Promise.all([
     db.from('circles').select('id, name'),
     db.from('circle_members').select('circle_id, user_id, joined_at'),
-    db.from('profiles').select('id, display_name, birthday, timezone, expo_push_token'),
+    db.from('profiles').select('id, display_name, birthday, timezone'),
     db.from('consents').select('user_id, paused_until'),
     db.from('spotlight_days').select('circle_id, day, user_id').gte('day', addDays(utcToday, -30)),
     db.from('moments').select('id, circle_id, user_id, title, occurs_on')
@@ -221,11 +221,19 @@ Deno.serve(async (req) => {
     if (error) console.error('nudge insert failed', error.message);
   }
 
-  const messages: PushMessage[] = toSend.flatMap((c) => {
-    const token = profiles.get(c.log.user_id)?.expo_push_token;
-    return token ? [{ to: token, title: c.title, body: c.body, data: c.data, sound: 'default' as const }] : [];
-  });
-  const push = await sendPush(messages);
+  let notified = 0;
+  try {
+    notified = await notify(toSend.map((c) => ({
+      user_id: c.log.user_id,
+      type: c.data.type,
+      circle_id: c.data.circle_id,
+      target_id: c.data.target_id ?? null,
+      title: c.title,
+      body: c.body,
+    })));
+  } catch (err) {
+    return json({ error: String(err) }, 500);
+  }
 
   const counts = toSend.reduce<Record<string, number>>((acc, c) => {
     acc[c.log.kind] = (acc[c.log.kind] ?? 0) + 1;
@@ -234,10 +242,10 @@ Deno.serve(async (req) => {
   const response: DemoRunResponse & Record<string, unknown> = {
     ok: true,
     summary: `${toSend.length} reminders (${Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(', ') || 'none due'}), ` +
-      `${push.sent} pushes sent, ${newSpotlights.length} spotlight days scheduled`,
+      `${notified} notifications created, ${newSpotlights.length} spotlight days scheduled`,
     now: now.toISOString(),
     reminders: counts,
-    push,
+    notified,
   };
   return json(response);
 });
