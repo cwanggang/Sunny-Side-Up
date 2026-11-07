@@ -1,0 +1,13 @@
+# Per-developer Claude Code instructions (e.g. "I am Developer A.")
+CLAUDE.local.md
+
+# Env files (keep .env.example committed)
+.env
+.env.*
+!.env.example
+
+# Supabase local
+supabase/.branches
+supabase/.temp
+
+# The Expo template's .gitignore gets merged in here during S1
