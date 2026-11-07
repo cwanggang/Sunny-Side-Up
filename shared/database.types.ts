@@ -390,6 +390,57 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string
+          circle_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          target_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          body: string
+          circle_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          target_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string
+          circle_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          target_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nudges: {
         Row: {
           about_user_id: string
@@ -451,7 +502,6 @@ export type Database = {
           birthday: string | null
           created_at: string
           display_name: string
-          expo_push_token: string | null
           id: string
           timezone: string
         }
@@ -460,7 +510,6 @@ export type Database = {
           birthday?: string | null
           created_at?: string
           display_name?: string
-          expo_push_token?: string | null
           id: string
           timezone?: string
         }
@@ -469,7 +518,6 @@ export type Database = {
           birthday?: string | null
           created_at?: string
           display_name?: string
-          expo_push_token?: string | null
           id?: string
           timezone?: string
         }
@@ -706,6 +754,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_notifications: { Args: { p_rows: Json }; Returns: number }
       demo_reseed: { Args: { p_emails?: string[] }; Returns: Json }
       join_circle: {
         Args: { invite_code: string }
@@ -725,7 +774,6 @@ export type Database = {
         }
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
-      register_push_token: { Args: { token: string }; Returns: undefined }
       run_drift: { Args: { p_day?: string }; Returns: Json }
       user_media_paths: { Args: { p_user_id: string }; Returns: string[] }
       verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
@@ -734,6 +782,13 @@ export type Database = {
       app_event_kind: "app_open"
       circle_role: "owner" | "member"
       interaction_kind: "egg" | "photo" | "voice" | "text"
+      notification_type:
+        | "interaction"
+        | "nudge"
+        | "share_open"
+        | "spotlight"
+        | "birthday"
+        | "moment"
       nudge_reason: "drift" | "cover" | "birthday" | "moment" | "spotlight"
       share_kind: "sunday" | "spotlight"
     }
@@ -869,6 +924,14 @@ export const Constants = {
       app_event_kind: ["app_open"],
       circle_role: ["owner", "member"],
       interaction_kind: ["egg", "photo", "voice", "text"],
+      notification_type: [
+        "interaction",
+        "nudge",
+        "share_open",
+        "spotlight",
+        "birthday",
+        "moment",
+      ],
       nudge_reason: ["drift", "cover", "birthday", "moment", "spotlight"],
       share_kind: ["sunday", "spotlight"],
     },
