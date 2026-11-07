@@ -8,11 +8,12 @@
 // (claimed atomically in scheduler_log). Paused users get no pushes, and no reminders are
 // sent about paused users (plan §9.6).
 //
-// Auth: the cron webhook secret, or the demo key. With the demo key, ?now=<iso> pretends it's
-// that time and the once-only check is skipped, so the demo can be re-run.
+// Auth: the cron webhook secret, or the demo key. Option `now=<iso>` (query string with the demo
+// key, JSON body via webhook) pretends it's that time and skips the once-only check, so the demo
+// can be re-run.
 import { adminClient } from '../_shared/supabase.ts';
 import { sendPush, type PushMessage } from '../_shared/push.ts';
-import { isDemoRequest, json, verifyWebhook } from '../_shared/http.ts';
+import { authorizeJob, json } from '../_shared/http.ts';
 import { addDays, isBirthdayOn, localTime } from '../_shared/time.ts';
 import type { DemoRunResponse, PushPayload } from '../_shared/contract.ts';
 
@@ -34,11 +35,11 @@ interface Candidate {
 const firstName = (p?: Profile) => p?.display_name.trim().split(/\s+/)[0] || 'A friend';
 
 Deno.serve(async (req) => {
-  const demo = isDemoRequest(req);
-  if (!demo && !(await verifyWebhook(req))) return json({ error: 'unauthorized' }, 401);
+  const opts = await authorizeJob(req);
+  if (!opts) return json({ error: 'unauthorized' }, 401);
 
-  const nowParam = new URL(req.url).searchParams.get('now');
-  const now = demo && nowParam ? new Date(nowParam) : new Date();
+  const demo = Boolean(opts.now); // forced time -> re-runnable demo
+  const now = opts.now ? new Date(opts.now) : new Date();
   if (Number.isNaN(now.getTime())) return json({ error: 'bad ?now=' }, 400);
 
   const db = adminClient();
