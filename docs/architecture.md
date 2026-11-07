@@ -1,6 +1,8 @@
 # Sunny Side Up — Architecture & Build Plan Overview
 
 > **Background only.** This is the earlier overview. For ownership, folders, phases, the table and API contract, and task IDs, **[`plan.md`](plan.md) is the source of truth and wins on any conflict.** In particular, the "Two-developer split" section below is superseded: plan.md has 6 phases (0–5), a wider folder layout (A owns `app/` and `src/`; B owns `supabase/`, `analytics/`, `scripts/`), and a three-file contract in `/shared`. Hangout ideas use the circle's typed `home_area`, not a places API.
+>
+> **Build pivot (Nov 7):** no paid Apple Developer account. The app is built with Xcode on a Mac and signed with a free Apple ID (plan.md §3.0). That means **no Apple push service and no Sign in with Apple** (email + password only); notifications are rows in a `notifications` table that the app shows as local notifications. HealthKit is unconfirmed on a free account.
 
 iOS-first app built with Expo (React Native) on a Supabase backend, with an LLM for nudge wording and hangout ideas. Built for the Triangle AI Hackathon at Duke, November 6–8, 2026 (36 hours of build time). The calendar features are parked for now.
 
