@@ -81,7 +81,7 @@ Developer A and Developer B never edit the same folders, so merges to `main` sho
 
 ### 3.1 Accounts and keys (do first; some take time)
 
-- [ ] **P0.1** Paid Apple Developer account (needed for push notifications, the HealthKit entitlement, and EAS internal-distribution dev builds on real devices). **Enrollment approval can take 24 to 48 hours, so check its status first.** Register every team phone's UDID (`eas device:create`). If it isn't approved in time, see the fallback in section 11.
+- [x] **P0.1** Paid Apple Developer account (needed for push notifications, the HealthKit entitlement, and EAS internal-distribution dev builds on real devices). **Enrollment approval can take 24 to 48 hours, so check its status first.** Register every team phone's UDID (`eas device:create`). If it isn't approved in time, see the fallback in section 11.
 - [ ] **P0.2** Expo account + EAS CLI logged in (`npm i -g eas-cli`, `eas login`).
 - [ ] **P0.3** Supabase project created. Save the project URL, anon key, service role key (B only, never in the app), and the **session pooler** connection string for Informer (the direct connection string is IPv6-only and many external tools can't reach it).
 - [ ] **P0.4** Anthropic API key (B only, stored as a Supabase secret).
@@ -96,7 +96,7 @@ Developer A and Developer B never edit the same folders, so merges to `main` sho
 - [ ] **P0.10** Hangout ideas use a **circle "home area"** typed by a member (for example "Durham, NC"), not anyone's live location.
 - [ ] **P0.11** Branch names: `a/<phase>` and `b/<phase>`.
 - [ ] **P0.12** Give the designers the screen list (section 4.4) so the designs cover every screen, and agree on the H+24 handoff.
-- [ ] **P0.13** Visibility of directed interactions: when `recipient_id` is set (an egg to one person), does the whole circle see it in the feed (current RLS: "members of that circle"), or only the sender and recipient? Decide before B0.3.
+- [x] **P0.13** Visibility of directed interactions: when `recipient_id` is set (an egg, photo, voice memo, or text to one person), **only the sender and the recipient** can see it. Whole-circle interactions (`recipient_id` null) are visible to all members. *Contract change, see §4.*
 - [x] **P0.14** Demo cast (real phone accounts, all in one demo circle). The drift seed (B4.8) backfills history for these accounts, looked up by email:
 
   | Person | Email | Demo role |
@@ -145,6 +145,7 @@ This section defines `/shared`. Developer B writes the SQL to match it; Develope
 | Date | Change | Affects |
 | --- | --- | --- |
 | 2026-11-07 | **contract:** email sign-in changed from one-time code to email + password ("Confirm email" off, no emails sent). `sendEmailCode` / `verifyEmailCode` replaced by `signUpWithEmail` / `signInWithEmail`. Sign in with Apple unchanged. | P0.8, A1.1, B1.1, §4.3 Auth, §4.4 sign-in |
+| 2026-11-07 | **contract:** directed interactions (`recipient_id` set) are visible only to sender and recipient; reactions and media follow the parent interaction's visibility. `useFeed(circleId)` therefore returns whole-circle items plus the viewer's own directed items. | P0.13, §4.1 `interactions` / `reactions` / storage, B0.3, A2.1 |
 
 ### 4.1 Database tables (public schema)
 
@@ -154,8 +155,8 @@ This section defines `/shared`. Developer B writes the SQL to match it; Develope
 | `consents` | `user_id`, `location` (bool), `health` (bool), `auto_nudges` (bool, default true), `paused_until` (timestamptz, nullable), `updated_at` | Self only |
 | `circles` | `id`, `name`, `home_area` (text), `invite_code` (unique), `created_by`, `created_at` | Members |
 | `circle_members` | `circle_id`, `user_id`, `role` (`owner` or `member`), `joined_at` | Members of that circle |
-| `interactions` | `id`, `circle_id`, `sender_id`, `recipient_id` (nullable = whole circle), `kind` (`egg`, `photo`, `voice`, `text`), `media_path`, `body`, `created_at` | Members of that circle |
-| `reactions` | `interaction_id`, `user_id`, `emoji`, `created_at` | Members of that circle |
+| `interactions` | `id`, `circle_id`, `sender_id`, `recipient_id` (nullable = whole circle), `kind` (`egg`, `photo`, `voice`, `text`), `media_path`, `body`, `created_at` | If `recipient_id` is null: members of that circle. If set: **only `sender_id` and `recipient_id`** (P0.13) |
+| `reactions` | `interaction_id`, `user_id`, `emoji`, `created_at` | Whoever can see the parent interaction |
 | `shares` | `id`, `circle_id`, `author_id`, `kind` (`sunday` or `spotlight`), `period_key` (for example `2026-W45` or `2026-11-07`), `body`, `media_path`, `created_at` | Members of that circle |
 | `spotlight_days` | `circle_id`, `day` (date), `user_id` | Members of that circle |
 | `moments` | `id`, `circle_id`, `user_id`, `title`, `occurs_on` (date), `created_at` | Members of that circle; created only by the user themselves |
@@ -169,7 +170,7 @@ This section defines `/shared`. Developer B writes the SQL to match it; Develope
 
 **Realtime:** `interactions` and `reactions` are added to the `supabase_realtime` publication (B0.2), or `useFeed` gets no live updates.
 
-**Storage buckets:** `media` (private). Path: `{circle_id}/{interaction_or_share_id}.{ext}`. Policy: read and write only for members of `circle_id`.
+**Storage buckets:** `media` (private). Path: `{circle_id}/{interaction_or_share_id}.{ext}`. Policy: write only for members of `circle_id`; read only for users who can see the matching `interactions` or `shares` row (so media in a directed interaction is readable only by sender and recipient, per P0.13).
 
 ### 4.2 Server API (RPCs and Edge Functions)
 

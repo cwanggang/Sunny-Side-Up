@@ -40,6 +40,8 @@ Tip for developers: put `I am Developer A.` (or B) in `CLAUDE.local.md` so you d
 
 - Developers may be on **Windows**. Use cross-platform commands; inline env vars (`FOO=1 cmd`) don't work in PowerShell, so use `.env.local`. Local iOS builds (`npx expo run:ios`) need a Mac; EAS cloud builds work from Windows.
 - `supabase start` (local stack) needs Docker. Without it, Developer B works against the hosted project (`supabase db push`, `supabase functions deploy`).
+- **Expo SDK 58** (React Native 0.88, React 19.3). Expo changes a lot between SDKs, so don't trust memory for Expo/EAS APIs: check `https://docs.expo.dev/versions/v58.0.0/` or `https://docs.expo.dev/llms.txt` first.
+- **Developer A tooling:** add packages with `npx expo install <pkg>` (never plain `npm install`; it resolves SDK-compatible versions). Before declaring a task done: `npx tsc --noEmit` and `npx expo lint`. `npx expo-doctor` diagnoses dependency/config issues. `ios/` and `android/` are generated; never hand-edit them, configure through `app.config.ts` and config plugins. This app does **not** run in Expo Go; use the dev build (S4).
 - Edge Functions run on Deno. Use `npm:` / `jsr:` specifiers.
 - LLM calls happen **only** in Edge Functions (`supabase/functions/_shared/llm.ts`). Model comes from the `LLM_MODEL` secret; default to `claude-haiku-5-5` for nudge wording (fast, cheap) and `claude-sonnet-5-5` if hangout ideas need more quality. Always have a timeout and a fallback string.
 
