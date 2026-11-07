@@ -402,7 +402,7 @@ Tick only your own role's list (this keeps merges conflict-free). Commit the tic
 
 ### Developer B
 
-- [ ] B0.1 · [ ] B0.2 · [ ] B0.3 · [ ] B0.4
+- [x] B0.1 · [ ] B0.2 · [ ] B0.3 · [ ] B0.4
 - [ ] B1.1 · [ ] B1.2 · [ ] B1.3 · [ ] B1.4 · [ ] B1.5
 - [ ] B2.1 · [ ] B2.2 · [ ] B2.3 · [ ] B2.4 · [ ] B2.5
 - [ ] B3.1 · [ ] B3.2 · [ ] B3.3 · [ ] B3.4 · [ ] B3.5
