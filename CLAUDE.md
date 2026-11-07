@@ -6,7 +6,7 @@ A friend-circle iOS app (Expo + React Native + TypeScript, Supabase backend, Cla
 
 Before reading code, planning, or editing anything, you must know which developer you're working for:
 
-- **Developer A**: mobile app. Owns `app/`, `src/`, `assets/`, `app.config.ts`, `eas.json`, `package.json`.
+- **Developer A**: mobile app. Owns `app/`, `src/`, `assets/`, `app.config.ts`, `package.json`.
 - **Developer B**: backend, AI, analytics. Owns `supabase/`, `analytics/`, `scripts/`.
 
 Use the role from, in order:
@@ -34,14 +34,16 @@ Tip for developers: put `I am Developer A.` (or B) in `CLAUDE.local.md` so you d
 6. **Secrets:** only `EXPO_PUBLIC_*` values go in the app. The service role key, Anthropic key, and `DEMO_KEY` value live in Supabase secrets. Never commit `.env*` files (except `.env.example`).
 7. **Work by task ID.** Check "Depends on" and plan.md §6 first. When done: tick the box in **your own role's list** in plan.md §10 only, and commit with the ID first (`B2.1: on-interaction push function`). Commit or push only when the developer asks.
 8. **Branches:** `a/<phase>` or `b/<phase>` (e.g. `b/phase-1`). Never commit directly to `main`; merges happen at merge points.
-9. **Native changes (Developer A):** adding a native package or editing `app.config.ts` requires a new dev build. Say so explicitly so the developer can tell the team.
+9. **Native changes (Developer A):** adding a native package or editing `app.config.ts` means every phone must be re-installed from the build Mac. Say so explicitly so the developer can tell the team.
+10. **Free Apple ID only (plan.md §3.0).** No remote push, no Sign in with Apple, no capability that needs a paid account. Notifications are rows in the `notifications` table, shown by the app as local notifications. HealthKit only if `ENABLE_HEALTHKIT` in `app.config.ts` is `true`.
 
 ## Environment notes
 
-- Developers may be on **Windows**. Use cross-platform commands; inline env vars (`FOO=1 cmd`) don't work in PowerShell, so use `.env.local`. Local iOS builds (`npx expo run:ios`) need a Mac; EAS cloud builds work from Windows.
+- Developers may be on **Windows**. Use cross-platform commands; inline env vars (`FOO=1 cmd`) don't work in PowerShell, so use `.env.local`.
+- **Builds:** the app is compiled and installed only on the **build Mac** (`npx expo run:ios --device`, free Personal Team signing, phone on USB). We do **not** use EAS Build or Expo Go. Day-to-day JS work runs from any machine with `npx expo start --dev-client`. Builds expire after 7 days.
 - `supabase start` (local stack) needs Docker. Without it, Developer B works against the hosted project (`supabase db push`, `supabase functions deploy`).
 - **Expo SDK 58** (React Native 0.88, React 19.3). Expo changes a lot between SDKs, so don't trust memory for Expo/EAS APIs: check `https://docs.expo.dev/versions/v58.0.0/` or `https://docs.expo.dev/llms.txt` first.
-- **Developer A tooling:** add packages with `npx expo install <pkg>` (never plain `npm install`; it resolves SDK-compatible versions). Before declaring a task done: `npx tsc --noEmit` and `npx expo lint`. `npx expo-doctor` diagnoses dependency/config issues. `ios/` and `android/` are generated; never hand-edit them, configure through `app.config.ts` and config plugins. This app does **not** run in Expo Go; use the dev build (S4).
+- **Developer A tooling:** add packages with `npx expo install <pkg>` (never plain `npm install`; it resolves SDK-compatible versions). Before declaring a task done: `npx tsc --noEmit` and `npx expo lint`. `npx expo-doctor` diagnoses dependency/config issues. `ios/` and `android/` are generated; never hand-edit them, configure through `app.config.ts` and config plugins. This app does **not** run in Expo Go; use the Xcode-installed dev build (S4).
 - Edge Functions run on Deno. Use `npm:` / `jsr:` specifiers.
 - LLM calls happen **only** in Edge Functions (`supabase/functions/_shared/llm.ts`). Model comes from the `LLM_MODEL` secret; default to `claude-haiku-5-5` for nudge wording (fast, cheap) and `claude-sonnet-5-5` if hangout ideas need more quality. Always have a timeout and a fallback string.
 
@@ -49,7 +51,8 @@ Tip for developers: put `I am Developer A.` (or B) in `CLAUDE.local.md` so you d
 
 - **RLS recursion (B0.3):** membership checks use a `SECURITY DEFINER` function like `is_circle_member(circle_id)`, not a subquery on `circle_members` inside a `circle_members` policy.
 - **`profiles` (B0.3):** base table is self-only; other members read through the `circle_profiles` view, which never exposes `expo_push_token`.
-- **Realtime (B0.2/A2.1):** `interactions` and `reactions` must be in the `supabase_realtime` publication.
+- **Realtime (B0.2/A1.4/A2.1):** `interactions`, `reactions`, and `notifications` must be in the `supabase_realtime` publication. Realtime doesn't work on views, so never subscribe to `my_nudges`; nudges reach the app as `notifications` rows.
+- **Notifications are foreground-first:** iOS suspends the app soon after it's backgrounded, closing the realtime socket. `useNotifications` must fetch unread rows on every return to the foreground.
 - **Expo Router (S1/A0.3):** routes live in root `app/`; never create `src/app/` (it would take over routing).
 - **Email auth (A1.1/B1.1):** email + password with "Confirm email" OFF in Supabase Auth. No emails are sent, so no SMTP setup. Don't build email-code or magic-link flows.
-- **Demo (B4.8):** drift needs 17+ days of backdated history for the *real* demo accounts. Fake seed users can't receive pushes.
+- **Demo (B4.8):** drift needs 17+ days of backdated history for the *real* demo accounts. Fake seed users aren't on any phone, so they never see notifications.

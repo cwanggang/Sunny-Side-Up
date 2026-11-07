@@ -4,8 +4,15 @@ import type { ExpoConfig } from 'expo/config';
 // new dev build: announce it to the team (plan.md §3.4).
 //
 // Permission strings must match what this build actually does (plan.md §9).
+//
+// Built locally with Xcode and a FREE Apple ID (plan.md §3.0): no remote push,
+// no Sign in with Apple. Don't add capabilities that need a paid account.
 
 const BUNDLE_ID = 'com.cwanggang.sunnysideup';
+
+// HealthKit may not be allowed on a free Personal Team. S4 tries `true` once on
+// the build Mac; if Xcode rejects the capability, leave this `false`.
+const ENABLE_HEALTHKIT = false;
 
 const config: ExpoConfig = {
   name: 'Sunny Side Up',
@@ -20,7 +27,6 @@ const config: ExpoConfig = {
     bundleIdentifier: BUNDLE_ID,
     icon: './assets/expo.icon',
     supportsTablet: false,
-    usesAppleSignIn: true,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
@@ -56,15 +62,12 @@ const config: ExpoConfig = {
     'expo-image',
     'expo-dev-client',
 
-    // Auth: adds the Sign in with Apple entitlement.
-    'expo-apple-authentication',
-
-    // Push: aps-environment entitlement + `remote-notification` background mode.
+    // Local notifications only. Remote push (aps-environment) needs a paid
+    // account; the server writes `notifications` rows instead (plan.md §4).
     [
       'expo-notifications',
       {
-        mode: 'development', // switch to 'production' for TestFlight/App Store builds
-        enableBackgroundRemoteNotifications: true,
+        enableRemoteNotifications: false,
       },
     ],
 
@@ -112,16 +115,20 @@ const config: ExpoConfig = {
     'expo-task-manager',
     // `processing` background mode + BGTaskScheduler id, for the daily upload (A4.5).
     'expo-background-task',
-    // HealthKit entitlement + read-only usage string (A4.4).
-    [
-      '@kingstinct/react-native-healthkit',
-      {
-        NSHealthShareUsageDescription:
-          'Sunny Side Up reads last night\'s sleep and yesterday\'s steps. Only those two daily numbers are uploaded; other health data never leaves your phone.',
-        NSHealthUpdateUsageDescription: false, // read-only: never writes health data
-        background: false, // reads once a day, no background delivery
-      },
-    ],
+    // HealthKit entitlement + read-only usage string (A4.4), only when enabled.
+    ...(ENABLE_HEALTHKIT
+      ? ([
+          [
+            '@kingstinct/react-native-healthkit',
+            {
+              NSHealthShareUsageDescription:
+                "Sunny Side Up reads last night's sleep and yesterday's steps. Only those two daily numbers are uploaded; other health data never leaves your phone.",
+              NSHealthUpdateUsageDescription: false, // read-only: never writes health data
+              background: false, // reads once a day, no background delivery
+            },
+          ],
+        ] as NonNullable<ExpoConfig['plugins']>)
+      : []),
   ],
 
   experiments: {
@@ -129,9 +136,12 @@ const config: ExpoConfig = {
     reactCompiler: true,
   },
 
+  owner: 'cadenwang',
   extra: {
-    // S4: `eas init` prints the project id; paste it here (needed for Expo push tokens).
-    eas: { projectId: undefined },
+    // EAS project (from `eas init`). Unused while we build locally; kept so
+    // remote push can be re-enabled if a paid account appears (plan.md §11).
+    eas: { projectId: '037fe85b-a9f7-4155-81cc-d047c312947d' },
+    healthkitEnabled: ENABLE_HEALTHKIT, // read at runtime via expo-constants
   },
 };
 
