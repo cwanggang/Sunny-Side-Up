@@ -430,3 +430,12 @@ verify_jwt = false
 
 [functions.rhythm-scheduler]
 verify_jwt = false
+
+[functions.nightly-drift]
+verify_jwt = false
+
+[functions.nudge-engine]
+verify_jwt = false
+
+[functions.demo-reseed]
+verify_jwt = false

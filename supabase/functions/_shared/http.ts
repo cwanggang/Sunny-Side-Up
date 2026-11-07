@@ -25,6 +25,25 @@ export function isDemoRequest(req: Request): boolean {
   return diff === 0;
 }
 
+/**
+ * Auth for scheduled jobs. Two trusted callers:
+ *   - the demo screen: x-demo-key header, options in the query string (?now=, ?demo=true)
+ *   - pg_cron / SQL via private.post_webhook(): webhook secret, options in the JSON body
+ * Returns the options, or null if the caller is neither.
+ */
+export async function authorizeJob(req: Request): Promise<Record<string, string> | null> {
+  if (isDemoRequest(req)) return Object.fromEntries(new URL(req.url).searchParams);
+  if (!(await verifyWebhook(req))) return null;
+  let body: unknown = {};
+  try {
+    body = await req.json();
+  } catch {
+    // empty body is fine
+  }
+  const entries = body && typeof body === 'object' ? Object.entries(body as Record<string, unknown>) : [];
+  return Object.fromEntries(entries.map(([k, v]) => [k, String(v)]));
+}
+
 /** Shape of the payload our webhook triggers send (same as Supabase database webhooks). */
 export interface WebhookPayload<T> {
   type: 'INSERT' | 'UPDATE' | 'DELETE';
