@@ -25,11 +25,6 @@ export interface LeaveCircleArgs {
 }
 export type LeaveCircleResult = void;
 
-export interface RegisterPushTokenArgs {
-  token: string;
-}
-export type RegisterPushTokenResult = void;
-
 // ---------- Edge Functions (call with supabase.functions.invoke(name, { body })) ----------
 
 export interface HangoutIdeasRequest {
@@ -68,16 +63,22 @@ export interface DemoRunResponse {
   summary: string;
 }
 
-// ---------- Push notifications ----------
+// ---------- Notifications (plan §3.0 / §4.2: no remote push) ----------
+// The server inserts `notifications` rows (see database.types.ts for the row type). The app
+// subscribes to its own rows over Realtime, shows title/body as a local notification, routes on
+// type + circle_id + target_id when tapped, and sets read_at.
 
-export type PushType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
+export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
 
-/** `data` payload of every push. The app routes on `type`. */
-export interface PushPayload {
-  type: PushType;
-  circle_id: string;
-  target_id?: string;
-}
+/**
+ * What target_id points at, per type:
+ *   interaction -> interaction id
+ *   nudge       -> nudge id (my_nudges.id)
+ *   share_open  -> ISO week, e.g. '2026-W45' (shares.period_key)
+ *   spotlight   -> user id of today's spotlight person
+ *   birthday    -> user id of the birthday person
+ *   moment      -> moment id
+ */
 
 // ---------- Storage ----------
 

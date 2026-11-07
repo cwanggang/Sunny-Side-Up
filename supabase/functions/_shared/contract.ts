@@ -5,13 +5,7 @@
 
 export const DEMO_KEY_HEADER = 'x-demo-key';
 
-export type PushType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
-
-export interface PushPayload {
-  type: PushType;
-  circle_id: string;
-  target_id?: string;
-}
+export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
 
 export interface HangoutIdeasRequest {
   circle_id: string;
