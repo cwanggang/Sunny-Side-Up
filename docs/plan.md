@@ -118,7 +118,7 @@ The point of this step is to **install every native module once, up front**. Eac
   - Auth: `expo-apple-authentication`
   - Push and links: `expo-notifications`, `expo-device`, `expo-linking`
   - Media: `expo-camera`, `expo-image-picker`, `expo-audio`, `expo-image`, `expo-file-system`
-  - Signals: `expo-location`, `expo-task-manager`, `expo-background-task`, and a HealthKit library (`@kingstinct/react-native-healthkit` or `react-native-health`; use whichever builds cleanly with the current Expo SDK)
+  - Signals: `expo-location`, `expo-task-manager`, `expo-background-task`, and a HealthKit library. **Chosen: `@kingstinct/react-native-healthkit`** (+ its peer `react-native-nitro-modules`). `react-native-health` was last published in 2024 and RN 0.88 is New-Architecture only. `expo-asset` was also added (required peer of `expo-audio`)
   - Dev: `expo-dev-client`
 - [ ] **S3** `app.config.ts`: bundle ID, scheme `sunnysideup` (for invite links), config plugins for every native module above, iOS permission strings (camera, microphone, photo library, location when-in-use and always, Health read), background modes (`location`, `remote-notification`, `fetch`), and the HealthKit entitlement.
 - [ ] **S4** `eas.json` with a `development` profile. Run `eas build --profile development --platform ios` and install it on every phone.
@@ -390,7 +390,7 @@ Tick only your own role's list (this keeps merges conflict-free). Commit the tic
 
 ### Developer A
 
-- [x] S1 · [ ] S2 · [ ] S3 · [ ] S4 · [ ] S5 · [ ] S6
+- [x] S1 · [x] S2 · [ ] S3 · [ ] S4 · [ ] S5 · [ ] S6
 - [ ] A0.1 · [ ] A0.2 · [ ] A0.3
 - [ ] A1.1 · [ ] A1.2 · [ ] A1.3 · [ ] A1.4 · [ ] A1.5
 - [ ] A2.1 · [ ] A2.2 · [ ] A2.3 · [ ] A2.4 · [ ] A2.5 · [ ] A2.6

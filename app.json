@@ -32,7 +32,13 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-audio",
+      "expo-image",
+      "expo-background-task",
+      "@kingstinct/react-native-healthkit",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
