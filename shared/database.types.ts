@@ -686,6 +686,7 @@ export type Database = {
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
       register_push_token: { Args: { token: string }; Returns: undefined }
+      verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
     }
     Enums: {
       app_event_kind: "app_open"
