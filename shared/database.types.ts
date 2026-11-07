@@ -63,13 +63,6 @@ export type Database = {
             foreignKeyName: "app_events_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "app_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -100,13 +93,6 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "circle_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -148,13 +134,6 @@ export type Database = {
             foreignKeyName: "circles_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "circles_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -186,13 +165,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "consents_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "consents_user_id_fkey"
             columns: ["user_id"]
@@ -231,13 +203,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "daily_signals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "daily_signals_user_id_fkey"
             columns: ["user_id"]
@@ -281,13 +246,6 @@ export type Database = {
             foreignKeyName: "drift_scores_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "drift_scores_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -324,13 +282,6 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "engagement_daily_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -385,21 +336,7 @@ export type Database = {
             foreignKeyName: "interactions_recipient_id_fkey"
             columns: ["recipient_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "interactions_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "interactions_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -448,13 +385,6 @@ export type Database = {
             foreignKeyName: "moments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "moments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -496,13 +426,6 @@ export type Database = {
             foreignKeyName: "nudges_about_user_id_fkey"
             columns: ["about_user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nudges_about_user_id_fkey"
-            columns: ["about_user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -511,13 +434,6 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nudges_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -590,13 +506,6 @@ export type Database = {
             foreignKeyName: "reactions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -634,13 +543,6 @@ export type Database = {
           period_key?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "shares_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "shares_author_id_fkey"
             columns: ["author_id"]
@@ -685,13 +587,6 @@ export type Database = {
             foreignKeyName: "spotlight_days_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "spotlight_days_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -709,15 +604,7 @@ export type Database = {
           joined_at: string | null
           role: Database["public"]["Enums"]["circle_role"] | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "circle_members_circle_id_fkey"
-            columns: ["circle_id"]
-            isOneToOne: false
-            referencedRelation: "circles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       my_nudges: {
         Row: {
@@ -749,13 +636,6 @@ export type Database = {
             foreignKeyName: "nudges_about_user_id_fkey"
             columns: ["about_user_id"]
             isOneToOne: false
-            referencedRelation: "circle_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nudges_about_user_id_fkey"
-            columns: ["about_user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -770,20 +650,42 @@ export type Database = {
       }
     }
     Functions: {
-      can_read_media: { Args: { p_name: string }; Returns: boolean }
-      can_see_interaction: {
-        Args: { p_interaction_id: string }
-        Returns: boolean
+      create_circle: {
+        Args: { home_area?: string; name: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          home_area: string | null
+          id: string
+          invite_code: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "circles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      generate_invite_code: { Args: never; Returns: string }
-      is_circle_member: { Args: { p_circle_id: string }; Returns: boolean }
-      is_member_of: {
-        Args: { p_circle_id: string; p_user_id: string }
-        Returns: boolean
+      join_circle: {
+        Args: { invite_code: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          home_area: string | null
+          id: string
+          invite_code: string
+          name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "circles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      owns_media: { Args: { p_name: string }; Returns: boolean }
-      shares_circle_with: { Args: { p_user_id: string }; Returns: boolean }
-      try_uuid: { Args: { p: string }; Returns: string }
+      leave_circle: { Args: { circle_id: string }; Returns: undefined }
+      register_push_token: { Args: { token: string }; Returns: undefined }
     }
     Enums: {
       app_event_kind: "app_open"
