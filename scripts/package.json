@@ -6,7 +6,8 @@
   "scripts": {
     "rls-test": "node --env-file=.env rls-test.mjs",
     "seed-media": "node --env-file=.env seed-media.mjs",
-    "notify-test": "node notify-test.mjs"
+    "notify-test": "node notify-test.mjs",
+    "upload-demo-photos": "node --env-file=.env upload-demo-photos.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0"
