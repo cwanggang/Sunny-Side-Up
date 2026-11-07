@@ -405,8 +405,8 @@ Tick only your own role's list (this keeps merges conflict-free). Commit the tic
 - [x] B0.1 · [x] B0.2 · [x] B0.3 · [x] B0.4
 - [ ] B1.1 · [x] B1.2 · [x] B1.3 · [x] B1.4 · [x] B1.5
 - [ ] B2.1 · [ ] B2.2 · [x] B2.3 · [x] B2.4 · [x] B2.5
-- [ ] B3.1 · [x] B3.2 · [ ] B3.3 · [x] B3.4 · [x] B3.5
-- [ ] B4.1 · [ ] B4.2 · [ ] B4.3 · [ ] B4.4 · [ ] B4.5 · [ ] B4.6 · [ ] B4.7 · [ ] B4.8
+- [x] B3.1 · [x] B3.2 · [x] B3.3 · [x] B3.4 · [x] B3.5
+- [x] B4.1 · [x] B4.2 · [x] B4.3 · [x] B4.4 · [ ] B4.5 · [x] B4.6 · [ ] B4.7 · [ ] B4.8
 - [ ] B5.1 · [ ] B5.2 · [ ] B5.3
 
 ### Merge points (tick together)
