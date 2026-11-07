@@ -15,6 +15,16 @@ export async function verifyWebhook(req: Request): Promise<boolean> {
   return data === true;
 }
 
+/** Demo controls (plan §4.2): only when x-demo-key matches the DEMO_KEY secret. Off if unset. */
+export function isDemoRequest(req: Request): boolean {
+  const expected = Deno.env.get('DEMO_KEY');
+  const got = req.headers.get('x-demo-key');
+  if (!expected || !got || got.length !== expected.length) return false;
+  let diff = 0;
+  for (let i = 0; i < got.length; i++) diff |= got.charCodeAt(i) ^ expected.charCodeAt(i);
+  return diff === 0;
+}
+
 /** Shape of the payload our webhook triggers send (same as Supabase database webhooks). */
 export interface WebhookPayload<T> {
   type: 'INSERT' | 'UPDATE' | 'DELETE';

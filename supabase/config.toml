@@ -427,3 +427,6 @@ verify_jwt = false
 
 [functions.media-cleanup]
 verify_jwt = false
+
+[functions.rhythm-scheduler]
+verify_jwt = false

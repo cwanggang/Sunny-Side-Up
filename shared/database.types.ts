@@ -511,6 +511,45 @@ export type Database = {
           },
         ]
       }
+      scheduler_log: {
+        Row: {
+          circle_id: string
+          kind: string
+          period_key: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          circle_id: string
+          kind: string
+          period_key: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          circle_id?: string
+          kind?: string
+          period_key?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduler_log_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduler_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shares: {
         Row: {
           author_id: string
