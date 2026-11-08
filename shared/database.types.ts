@@ -607,6 +607,42 @@ export type Database = {
           },
         ]
       }
+      share_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          share_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          share_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          share_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_reactions_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "shares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "share_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shares: {
         Row: {
           author_id: string
