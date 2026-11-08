@@ -2,6 +2,8 @@
 // shown through a DOM component). Small eggs (lists, avatars) still use the plain-View version so a
 // screen doesn't open a dozen web views; they switch to the exact drawing once react-native-svg is
 // installed on the next build-Mac visit.
+import { Image } from 'expo-image';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Art } from '@/dom/art/art';
@@ -47,6 +49,32 @@ export function Egg({
     );
   }
   return <ViewEgg swatch={swatch} pattern={pattern} text={text} size={size} />;
+}
+
+/**
+ * The prototype's exact egg drawing as a native image (expo-image renders SVG on iOS), for small eggs
+ * in long lists like the feed, where a web view per egg would be too heavy. The hidden "crack" lines
+ * (only drawn when an egg is cracked) are removed, since there's no CSS here to hide them. If the
+ * image ever fails to render, it falls back to the plain-View egg.
+ */
+export function ImageEgg({ swatch = 'shell', pattern = 'none', size = 56 }: { swatch?: string; pattern?: string; size?: number }) {
+  const [failed, setFailed] = useState(false);
+  const uri = useMemo(() => {
+    const svg = Art.eggSVG({ swatch: swatch as never, pattern: artPattern(pattern) as never })
+      .replace(/<polyline class="crack[^>]*\/>/g, '')
+      .replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="130" ');
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  }, [swatch, pattern]);
+  if (failed) return <ViewEgg swatch={swatch} pattern={pattern} size={size} />;
+  return (
+    <Image
+      source={{ uri }}
+      style={{ width: size, height: size * 1.3 }}
+      contentFit="contain"
+      accessibilityLabel="egg"
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 function ViewEgg({ swatch, pattern, text, size }: { swatch: string; pattern: string; text?: string | null; size: number }) {

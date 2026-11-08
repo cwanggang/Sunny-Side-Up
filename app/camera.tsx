@@ -31,12 +31,15 @@ type Params = {
   nudge?: string;
   from?: string;
   warId?: string;
+  /** with mode=respond: today's photo, decorated before it posts. */
+  daily?: string;
 };
 
 // The camera: the native viewfinder under the prototype's chrome (src/dom/CameraPage.tsx). Opens with no
 // transition of its own: the yolk has already swollen over the screen behind it.
 export default function CameraScreen() {
-  const { mode = 'photo', circleId, to, nudge, from, warId } = useLocalSearchParams<Params>();
+  const { mode = 'photo', circleId, to, nudge, from, warId, daily } = useLocalSearchParams<Params>();
+  const isDaily = mode === 'respond' && daily === '1';
   const insets = useSafeAreaInsets();
   const { session } = useSession();
   const myId = session?.user.id ?? '';
@@ -47,7 +50,7 @@ export default function CameraScreen() {
   const capture = useCameraCapture();
   const library = usePhotoPicker();
   const coop = useCoop(circleId ?? '');
-  const sunday = useSundayEgg(mode === 'respond' && !to ? (circleId ?? '') : '');
+  const sunday = useSundayEgg(mode === 'respond' && !to && !isDaily ? (circleId ?? '') : '');
   const people = useCoopPeople(circleId ?? '');
 
   const camera = useRef<LiveCameraHandle>(null);
@@ -88,12 +91,17 @@ export default function CameraScreen() {
   const label =
     mode === 'snipe'
       ? `egg war: <b>${coop?.name ?? ''}</b>`
-      : `to: <b>${toName ?? people.data?.find((p) => p.id === sunday.data?.sendTo)?.username ?? 'your person'}</b>`;
-  const promptLabel = mode === 'snipe' ? 'egg war' : mode === 'respond' ? (to ? 'a little hello' : "this week's prompt") : "today's prompt";
+      : isDaily
+        ? `today's photo: <b>${coop?.name ?? ''}</b>`
+        : `to: <b>${toName ?? people.data?.find((p) => p.id === sunday.data?.sendTo)?.username ?? 'your person'}</b>`;
+  const promptLabel =
+    mode === 'snipe' ? 'egg war' : isDaily ? "today's prompt" : mode === 'respond' ? (to ? 'a little hello' : "this week's prompt") : "today's prompt";
   const promptText =
     mode === 'snipe'
       ? `catch someone from ${coop?.name ?? 'your coop'} off guard. candid only!`
-      : mode === 'respond'
+      : isDaily
+        ? (prompt.data ?? '')
+        : mode === 'respond'
         ? to
           ? `tell ${toName ?? 'them'} about something that made you think of them`
           : (sunday.data?.prompt ?? '')
@@ -158,7 +166,10 @@ export default function CameraScreen() {
         onNext={async () => {
           const media = encodeURIComponent(shotUri.current ?? '');
           if (mode === 'snipe') router.push(`/circle/${circleId}/snipe?warId=${warId}&uri=${media}`);
-          else router.push(`/circle/${circleId}/decorate?media=${media}${to ? `&to=${to}` : ''}${nudge ? `&nudge=${nudge}` : ''}${from ? `&from=${from}` : ''}`);
+          else
+            router.push(
+              `/circle/${circleId}/decorate?media=${media}${to ? `&to=${to}` : ''}${nudge ? `&nudge=${nudge}` : ''}${from ? `&from=${from}` : ''}${isDaily ? '&daily=1' : ''}`,
+            );
         }}
         onHome={async () => afterReply(() => router.dismissTo('/circles'))}
         dom={{ scrollEnabled: false, contentInsetAdjustmentBehavior: 'never', style: { flex: 1, backgroundColor: 'transparent' } }}

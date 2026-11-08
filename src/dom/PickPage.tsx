@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
 import { Art } from './art/art';
 import './art/art.css';
 import { play } from './play';
-import { avatar, call, esc, I, setTop, toast, TOAST_HTML, yolkExpand, type DomPerson, type YolkMorph } from './ui';
+import { avatar, call, closeOv, esc, I, openOv, setTop, toast, TOAST_HTML, wireOv, yolkExpand, type DomPerson, type YolkMorph } from './ui';
 
 const BARS = 34;
 const fmtS = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -26,7 +26,12 @@ interface Props {
   gift: boolean;
   focused: boolean;
   onBack: () => Promise<void>;
+  /** "take a photo": the yolk swells into the camera. */
   onPhoto: () => Promise<void>;
+  /** "choose from your photos": the native picker, then decorate. Without it, photo goes straight to the camera. */
+  onLibrary?: () => Promise<void>;
+  /** Offer a voice memo too (default true). Today's photo is photo-only. */
+  voice?: boolean;
   onRecord: () => Promise<void>;
   onStop: () => Promise<void>;
   onListen: () => Promise<void>;
@@ -52,9 +57,11 @@ export default function PickPage(props: Props) {
     const r = root.current;
     if (!r) return;
     setTop(r, top);
+    wireOv(r);
     $$('[data-back]').forEach((b) => (b.innerHTML = I.back));
     $('#optPhotoEgg').innerHTML = `${Art.friedEgg({ w: 116, h: 100, r: 42, seed: 41, amp: 0.13, yx: 63, yy: 51, yr: 23 })}<span class="opt-ic">${I.camera}</span>`;
-    $('#optVoiceEgg').innerHTML = `${Art.friedEgg({ w: 116, h: 100, r: 42, seed: 43, amp: 0.13, yx: 63, yy: 51, yr: 23 })}<span class="opt-ic">${I.mic}</span>`;
+    const voiceOpt = r.querySelector('#optVoiceEgg');
+    if (voiceOpt) voiceOpt.innerHTML = `${Art.friedEgg({ w: 116, h: 100, r: 42, seed: 43, amp: 0.13, yx: 63, yy: 51, yr: 23 })}<span class="opt-ic">${I.mic}</span>`;
     $('#voiceEgg').insertAdjacentHTML('afterbegin', `<svg viewBox="0 0 330 305" aria-hidden="true" overflow="visible">${Art.albumen(165, 150, 118, { seed: 51, amp: 0.12, sx: 1.06 })}</svg>`);
     $('#wave').innerHTML = Array.from({ length: BARS }, () => '<i></i>').join('');
     $('#voiceAgain').innerHTML = `${I.retake}<span>start over</span>`;
@@ -206,6 +213,14 @@ export default function PickPage(props: Props) {
     }
   }
 
+  // the yolk on the photo option swells over the screen, then the camera opens (prototype's openCamera)
+  async function takePhoto(o: HTMLElement) {
+    const r = root.current!;
+    const y = o.querySelector('.yolk circle') ?? o.querySelector('.yolk');
+    if (y && !morph.current) morph.current = await yolkExpand(r, $('.fx'), y);
+    return call(latest.current.onPhoto);
+  }
+
   async function onClick(e: React.MouseEvent) {
     const t = e.target as HTMLElement;
     const r = root.current!;
@@ -220,9 +235,22 @@ export default function PickPage(props: Props) {
     const o = t.closest<HTMLElement>('[data-pick]');
     if (o) {
       if (o.dataset.pick === 'voice') return slide(true);
-      const y = o.querySelector('.yolk circle') ?? o.querySelector('.yolk');
-      if (y && !morph.current) morph.current = await yolkExpand(r, $('.fx'), y);
-      return call(p.onPhoto);
+      if (p.onLibrary) {
+        openOv(
+          r,
+          `<div class="sheet" role="dialog" aria-label="photo"><h3>add a photo</h3>
+            <div class="opt-list"><button data-photo-src="camera">take a photo${I.camera}</button>
+            <button data-photo-src="library">choose from your photos${I.gallery}</button></div></div>`,
+        );
+        return;
+      }
+      return takePhoto(o);
+    }
+    const src = t.closest<HTMLElement>('[data-photo-src]');
+    if (src) {
+      await closeOv(r);
+      if (src.dataset.photoSrc === 'library') return call(p.onLibrary!);
+      return takePhoto(r.querySelector<HTMLElement>('[data-pick="photo"]')!);
     }
     if (t.closest('#voiceYolk')) {
       if (v.state === 'idle') return void voiceRecord();
@@ -261,12 +289,14 @@ export default function PickPage(props: Props) {
               <b>photo</b>
             </span>
           </button>
-          <button className="opt" data-pick="voice">
-            <span className="opt-egg" id="optVoiceEgg" />
-            <span className="opt-t">
-              <b>voice memo</b>
-            </span>
-          </button>
+          {props.voice !== false ? (
+            <button className="opt" data-pick="voice">
+              <span className="opt-egg" id="optVoiceEgg" />
+              <span className="opt-t">
+                <b>voice memo</b>
+              </span>
+            </button>
+          ) : null}
           <div className="pick-prompt">
             <span className="mono">{promptLabel}</span>
             <p>{prompt}</p>
@@ -298,6 +328,7 @@ export default function PickPage(props: Props) {
         </div>
       </section>
       <div className="fx" />
+      <div className="ov" />
       <div dangerouslySetInnerHTML={{ __html: TOAST_HTML }} style={{ display: 'contents' }} />
     </section>
   );

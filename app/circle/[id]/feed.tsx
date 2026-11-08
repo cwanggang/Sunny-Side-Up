@@ -1,10 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { REACTION_EMOJI, useCoop, useFeed, usePeople, useReact, useSession, type FeedItem, type Person } from '@/api';
+import { REACTION_EMOJI, eggStyleOf, useCoop, useFeed, usePeople, useReact, useSession, type FeedItem, type Person } from '@/api';
 import { Body, PhotoThumb, Screen, VoiceMemo } from '@/components';
 import { Avatar, EggButton } from '@/components/Coop';
-import { Egg } from '@/components/Egg';
+import { ImageEgg } from '@/components/Egg';
 import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 function timeAgo(iso: string): string {
@@ -66,7 +66,7 @@ function FeedCard({ item, me, nameOf, sender }: { item: FeedItem; me?: string; n
 
       {item.kind === 'egg' ? (
         <View style={styles.eggRow}>
-          <Egg size={56} swatch={sender?.egg.swatch ?? 'shell'} pattern={sender?.egg.pattern ?? 'none'} />
+          <ImageEgg size={56} swatch={item.egg_style ? eggStyleOf(item).swatch : (sender?.egg.swatch ?? 'shell')} pattern={item.egg_style ? eggStyleOf(item).pattern : (sender?.egg.pattern ?? 'none')} />
           <Text style={styles.eggText}>sent {to ? (to === 'you' ? 'you' : to) : 'everyone'} an egg</Text>
         </View>
       ) : null}
