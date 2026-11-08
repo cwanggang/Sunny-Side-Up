@@ -124,7 +124,7 @@ export default function EventPage(props: Props) {
   const panel = tab === 'chat' ? chatHTML() : tab === 'people' ? peopleHTML() : tab === 'gallery' ? galHTML() : detailsHTML();
   const head = `${hdr(esc(coopName), 'event')}
     <div class="evd-head" id="evdHead"><h2 class="display">${esc(title)}</h2>
-      ${past ? `<p class="g-kicker" style="margin-top:8px">this event already happened</p>` : mine ? `<button class="optout${out ? ' back-in' : ''}" data-opt>${out ? 'you opted out. rejoin?' : '× opt out'}</button>` : ''}
+      ${past ? `<p class="g-kicker" style="margin-top:8px">this event already happened</p>` : mine ? `<button class="optout${out ? ' back-in' : ''}" data-opt>${out ? 'you opted out. rejoin?' : '× opt out'}</button>` : `<button class="optout back-in" data-opt>join this event</button>`}
       <div class="tabs" role="tablist">${['details', 'chat', 'people', 'gallery'].map((t) => `<button role="tab" aria-selected="${tab === t}" data-tab="${t}">${t}</button>`).join('')}</div></div>`;
 
   const barState = tab !== 'chat' || !chat ? 'none' : !chatOpen ? 'closed' : !mine || out ? 'left' : 'open';
@@ -163,6 +163,11 @@ export default function EventPage(props: Props) {
     const tb = t.closest<HTMLElement>('[data-tab]');
     if (tb) return setTab(tb.dataset.tab ?? 'details');
     if (t.closest('[data-opt]')) {
+      // not on the event yet: this is "join" (the server adds you as a viewer)
+      if (!mine) {
+        toast(r, `you joined ${title}`);
+        return call(p.onOpt, false);
+      }
       toast(r, out ? `you're back in for ${title}` : `you opted out of ${title}`);
       return call(p.onOpt, !out);
     }

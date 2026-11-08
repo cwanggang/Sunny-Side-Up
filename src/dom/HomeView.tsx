@@ -674,7 +674,7 @@ export default function HomeView(props: Props) {
           if (q.latest) {
             $('#chickLayer').innerHTML = '';
             void chick.current?.nudge(q.latest);
-          } else toast(r, 'no nudges yet. run drift + nudge from demo controls');
+          } else toast(r, 'no nudges for you yet. nudges go to a friend of whoever went quiet (in the demo: jocelyn, after run drift + nudge)');
         }
       }, T(200));
     }

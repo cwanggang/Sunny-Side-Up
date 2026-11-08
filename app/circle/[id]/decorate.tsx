@@ -36,7 +36,14 @@ export default function DecorateScreen() {
         onDeliver={async (s) => {
           style.current = { swatch: s.swatch, pattern: s.pattern };
           if (to) {
-            await sendChick.mutateAsync({ circleId: id, recipientId: to, body: s.text, mediaUri: media || null, nudgeId: nudge || null });
+            await sendChick.mutateAsync({
+              circleId: id,
+              recipientId: to,
+              body: s.text,
+              mediaUri: media || null,
+              nudgeId: nudge || null,
+              eggStyle: { swatch: s.swatch, pattern: s.pattern },
+            });
           } else if (e) {
             await sendSunday.mutateAsync({
               circleId: id,

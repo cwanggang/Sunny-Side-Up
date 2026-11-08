@@ -609,6 +609,7 @@ export type Database = {
           body: string | null
           circle_id: string
           created_at: string
+          egg_style: Json | null
           id: string
           kind: Database["public"]["Enums"]["interaction_kind"]
           media_path: string | null
@@ -619,6 +620,7 @@ export type Database = {
           body?: string | null
           circle_id: string
           created_at?: string
+          egg_style?: Json | null
           id?: string
           kind: Database["public"]["Enums"]["interaction_kind"]
           media_path?: string | null
@@ -629,6 +631,7 @@ export type Database = {
           body?: string | null
           circle_id?: string
           created_at?: string
+          egg_style?: Json | null
           id?: string
           kind?: Database["public"]["Enums"]["interaction_kind"]
           media_path?: string | null

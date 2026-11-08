@@ -23,6 +23,21 @@ commands run from the repo root.
 6. Informer: open the **Sunny Side Up: coop health** dashboard and press **Reload** so it shows the fresh
    history (see `analytics/README.md`).
 
+## Demo photos (real ones)
+
+Reset demo uses the team's photos from Storage: `media/00000000-0000-4000-9000-0000000000d0/daily-<n>.jpg`,
+where `n` is the `daily_prompt()` index: **1** the view · **6** what's in your hand · **7** a corner of your
+room · **8** sky check · **9** your mood today (2-5 and 10 have no photo yet). Each seeded daily photo whose
+prompt has a file gets it plus a caption (captions live in `demo_reseed`, migration
+`20261108001500`); the gallery shows all of them; feed photos and the event album use them too.
+Prompts move by date, so a day whose prompt has no photo keeps a generated placeholder.
+
+To change or add one: make it about 1200x1600 JPEG (upright), then from the folder that holds it:
+```
+npx --prefix <repo> supabase storage cp --experimental --remote --yes --content-type image/jpeg ./daily-6.jpg ss:///media/00000000-0000-4000-9000-0000000000d0/daily-6.jpg
+```
+(use a relative source path: the CLI reads `C:` as a URL scheme), then **Reset demo**.
+
 ## The demo itself (about 2 minutes)
 
 | Step | Who | What happens |
