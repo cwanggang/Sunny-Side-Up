@@ -144,6 +144,9 @@ export type Database = {
           auto_nudges: boolean
           health: boolean
           location: boolean
+          notify_daily_photo: boolean
+          notify_friend_posts: boolean
+          notify_sunday: boolean
           paused_until: string | null
           updated_at: string
           user_id: string
@@ -152,6 +155,9 @@ export type Database = {
           auto_nudges?: boolean
           health?: boolean
           location?: boolean
+          notify_daily_photo?: boolean
+          notify_friend_posts?: boolean
+          notify_sunday?: boolean
           paused_until?: string | null
           updated_at?: string
           user_id: string
@@ -160,6 +166,9 @@ export type Database = {
           auto_nudges?: boolean
           health?: boolean
           location?: boolean
+          notify_daily_photo?: boolean
+          notify_friend_posts?: boolean
+          notify_sunday?: boolean
           paused_until?: string | null
           updated_at?: string
           user_id?: string
@@ -604,30 +613,36 @@ export type Database = {
           body: string | null
           circle_id: string
           created_at: string
+          egg_style: Json | null
           id: string
           kind: Database["public"]["Enums"]["share_kind"]
           media_path: string | null
           period_key: string
+          recipient_id: string | null
         }
         Insert: {
           author_id: string
           body?: string | null
           circle_id: string
           created_at?: string
+          egg_style?: Json | null
           id?: string
           kind: Database["public"]["Enums"]["share_kind"]
           media_path?: string | null
           period_key: string
+          recipient_id?: string | null
         }
         Update: {
           author_id?: string
           body?: string | null
           circle_id?: string
           created_at?: string
+          egg_style?: Json | null
           id?: string
           kind?: Database["public"]["Enums"]["share_kind"]
           media_path?: string | null
           period_key?: string
+          recipient_id?: string | null
         }
         Relationships: [
           {
@@ -642,6 +657,13 @@ export type Database = {
             columns: ["circle_id"]
             isOneToOne: false
             referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shares_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -673,6 +695,52 @@ export type Database = {
           {
             foreignKeyName: "spotlight_days_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sunday_pairs: {
+        Row: {
+          circle_id: string
+          created_at: string
+          giver_id: string
+          period_key: string
+          receiver_id: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          giver_id: string
+          period_key: string
+          receiver_id: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          giver_id?: string
+          period_key?: string
+          receiver_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sunday_pairs_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sunday_pairs_giver_id_fkey"
+            columns: ["giver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sunday_pairs_receiver_id_fkey"
+            columns: ["receiver_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -755,7 +823,12 @@ export type Database = {
         }
       }
       create_notifications: { Args: { p_rows: Json }; Returns: number }
+      daily_prompt: { Args: { p_day?: string }; Returns: string }
       demo_reseed: { Args: { p_emails?: string[] }; Returns: Json }
+      ensure_sunday_pairs: {
+        Args: { p_circle_id: string; p_period_key: string }
+        Returns: number
+      }
       join_circle: {
         Args: { invite_code: string }
         Returns: {
@@ -775,6 +848,23 @@ export type Database = {
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
       run_drift: { Args: { p_day?: string }; Returns: Json }
+      sunday_prompt: {
+        Args: { p_name: string; p_week: string }
+        Returns: string
+      }
+      sunday_status: {
+        Args: { p_circle_id: string; p_period_key?: string }
+        Returns: {
+          from_id: string
+          i_sent: boolean
+          my_share_id: string
+          period_key: string
+          prompt: string
+          send_to: string
+          their_share_id: string
+          they_sent: boolean
+        }[]
+      }
       user_media_paths: { Args: { p_user_id: string }; Returns: string[] }
       verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
     }
