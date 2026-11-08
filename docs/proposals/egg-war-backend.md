@@ -1,6 +1,7 @@
 # Proposal: egg war backend (design v0.5 "play!")
 
-Status: **backend applied to hosted, contract waiting for Developer A's OK** (2026-11-08).
+Status: **agreed by Developer A and applied** (2026-11-08), with two review fixes in
+`20261108001400_egg_war_fixes.sql` (snipe photo must be the sniper's own upload; `leave_egg_war`).
 Migrations `20261108001200_egg_war.sql` + `20261108001300_demo_analytics.sql` are live (additive:
 nothing existing changed shape). `shared/` types are regenerated in a separate `contract:` commit that
 should merge only once Developer A agrees. `src/api/` is untouched (Developer A's call).
@@ -17,7 +18,8 @@ Author: Developer B.
 | countdown ends → **war begins** (3 days) or **"they chose peace"** | resolver runs every minute (pg_cron) and inside every egg war RPC. It also resolves early once everyone has voted. Live: players get "the egg war has begun!". Off: the opted-in get "egg war called off" |
 | starter changes their mind | `cancel_egg_war(p_war_id)`: starter only, during the vote (not in the design; small addition) |
 | **join** a live war late | `join_egg_war(p_war_id)` |
-| **EGG yolk = camera → "who did you get?"** tag + caption (100 max) | upload to `media/{circle_id}/{snipe_id}.jpg`, then `post_snipe(p_war_id, p_target_id, p_media_path, p_caption?, p_id?)`. Target gets "you got egged 🥚 · @x sniped you: caption" |
+| opt out during a live war | `leave_egg_war(p_war_id)`: you drop off the board and can't be sniped any more; snipes of you stay until the war ends (delete any with `delete_snipe`); you can rejoin |
+| **EGG yolk = camera → "who did you get?"** tag + caption (100 max) | upload to `media/{circle_id}/{snipe_id}.jpg` (**you must be the uploader**), then `post_snipe(p_war_id, p_target_id, p_media_path, p_caption?, p_id?)`. Target gets "you got egged 🥚 · @x sniped you: caption" |
 | **leaderboard** sniper / sniped / score (can go negative) | `egg_war_status(...).war.board` = `[{user_id, sniper, sniped, score}]`, sorted |
 | **feed** of snipes | `egg_war_snipes` (coop members can read; Realtime on) |
 | **war over** → winner + final leaderboard; "the feed is cleared when a war ends" | state `over`, `final_board` + `snipe_count` kept; snipes **and their photos are deleted**; whole coop gets "the egg war is over · @x wins!" |
@@ -35,7 +37,7 @@ Author: Developer B.
 
 All three are in the `supabase_realtime` publication.
 
-**RPCs:** `start_egg_war`, `vote_egg_war`, `cancel_egg_war`, `join_egg_war`, `post_snipe`,
+**RPCs:** `start_egg_war`, `vote_egg_war`, `cancel_egg_war`, `join_egg_war`, `leave_egg_war`, `post_snipe`,
 `delete_snipe` (the sniper **or the person in the photo**), `egg_war_status`, `demo_skip_egg_war`.
 
 `egg_war_status(p_circle_id)` returns:
@@ -58,7 +60,7 @@ board can be shown).
 page of `circle_id`.
 
 **Suggested hooks for `@/api` (Developer A decides):** `useEggWar(circleId)` (status + realtime on the
-three tables), `useStartEggWar`, `useVoteEggWar`, `useCancelEggWar`, `useJoinEggWar`, `usePostSnipe`
+three tables), `useStartEggWar`, `useVoteEggWar`, `useCancelEggWar`, `useJoinEggWar`, `useLeaveEggWar`, `usePostSnipe`
 (upload + RPC, like `usePostDailyPhoto`), `useDeleteSnipe`, `useEggWarSnipes(warId)`, `useDemoSkipEggWar`.
 
 ## Privacy and safety choices
@@ -67,7 +69,7 @@ three tables), `useStartEggWar`, `useVoteEggWar`, `useCancelEggWar`, `useJoinEgg
   candid photos.
 - The person in a snipe can delete it. Snipes and their photos are **deleted when the war ends** (the design
   says so; it also keeps candid photos from piling up). Media cleanup knows about snipes.
-- Snipe photos must sit in the coop's own storage folder; readable only by coop members.
+- Snipe photos must sit in the coop's own storage folder **and be uploaded by the sniper** (`owns_media`); readable only by coop members, and only while the sniper still owns the file. A snipe can't point at someone else's private photo.
 - Egg war activity does **not** feed drift scoring (no change to `build_engagement`), so the game can't
   make someone look "quiet" or "active".
 - Informer gets only `analytics.egg_war_summary` (circle key, date, state, member and opt-in counts,

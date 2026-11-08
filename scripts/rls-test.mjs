@@ -407,6 +407,8 @@ try {
   check("Snipes can't be inserted directly", !!r.error);
   r = await maya.rpc('demo_skip_egg_war', { p_war_id: war?.id });
   check('Demo skip only works in the demo coop', !!r.error);
+  r = await sam.rpc('leave_egg_war', { p_war_id: war?.id });
+  check("Can't 'leave' during the vote (opt out instead)", !!r.error);
   r = await sam.rpc('cancel_egg_war', { p_war_id: war?.id });
   check("Only the starter can call it off", !!r.error);
   r = await maya.rpc('egg_war_status', { p_circle_id: SUNNY });
