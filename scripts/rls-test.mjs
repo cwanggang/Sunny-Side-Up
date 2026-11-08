@@ -242,8 +242,17 @@ try {
   check("Maya posts today's photo (her day)", !r.error, r.error?.message);
   const dailyId = r.data?.id;
   if (dailyId) cleanup.unshift(() => maya.from('shares').delete().eq('id', dailyId));
-  r = await maya.from('shares').insert({ circle_id: SUNNY, author_id: ID.maya, kind: 'spotlight', period_key: today });
-  check('Only one daily photo per circle per day', !!r.error);
+  r = await maya.from('shares').insert({ circle_id: SUNNY, author_id: ID.maya, kind: 'spotlight', period_key: today, body: 'and another' }).select('id').single();
+  check('Maya can post again on her day', !r.error, r.error?.message);
+  if (r.data?.id) { const id2 = r.data.id; cleanup.unshift(() => maya.from('shares').delete().eq('id', id2)); }
+  r = await sam.from('share_reactions').insert({ share_id: dailyId, user_id: ID.sam, emoji: '❤️' });
+  check("Sam reacts to Maya's photo", !r.error, r.error?.message);
+  r = await riley.from('share_reactions').insert({ share_id: dailyId, user_id: ID.riley, emoji: '❤️' });
+  check("Riley (other circle) can't react", !!r.error);
+  r = await jordan.from('share_reactions').select('emoji').eq('share_id', dailyId);
+  check('Jordan sees the reaction', r.data?.length === 1, JSON.stringify(r.error ?? r.data));
+  r = await maya.from('notifications').select('body').eq('type', 'spotlight').eq('target_id', ID.maya).ilike('body', '%reacted%');
+  check('Maya told "Sam reacted ❤️ to your photo"', r.data?.length >= 1, JSON.stringify(r.data));
   r = await sam.from('notifications').select('body').eq('type', 'spotlight').eq('target_id', ID.maya)
     .gte('created_at', new Date(Date.now() - 120000).toISOString());
   check("Sam told \"Maya's photo is up\"", r.data?.some((n) => n.body.includes('photo is up')), JSON.stringify(r.data));
