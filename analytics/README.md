@@ -81,5 +81,10 @@ Put screenshots for the pitch in `analytics/screenshots/`.
 | `circle_engagement_daily` | circle per day | `circle_key`, `day`, `members`, `sent`, `received`, `opens`, `activity_per_member` |
 | `daily_totals` | day | `day`, `circles`, `member_days`, `sent`, `opens`, `avg_activity_per_member` |
 | `circle_engagement_alerts` | circle | `circle_key`, `recent_avg` (last 3 days), `baseline_avg` (14 days before), `drop_pct`, `alert` (drop ≥ 25%) |
+| `daily_photo_participation` | circle per day | `circle_key`, `day`, `posted` (did that day's person post the daily photo) |
+| `sunday_exchange` | circle per Sunday | `circle_key`, `week`, `people` (paired), `eggs_sent`, `sent_pct` |
 
 `activity_per_member` = messages/reactions/shares sent + half the app opens, per member per day.
+
+Optional design charts: **daily photo participation** (bar: share of days with `posted = true` per
+`circle_key`) and **Sunday egg exchange** (bar: `sent_pct` per `week`).

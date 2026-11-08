@@ -4,6 +4,7 @@
 //   B3.2 Spotlight = the daily photo: keep spotlight_days filled 7 days ahead; from 09:00 local,
 //        tell today's person "it's your day" + today's prompt (setting: notify_daily_photo).
 //        Everyone else hears when the photo is posted (shares trigger, setting: notify_friend_posts).
+//        From 18:00 local on Sunday, one reminder to anyone who hasn't sent their egg yet.
 //        Quiet members are rotated in a little sooner (never visible anywhere).
 //   B3.3 Birthdays (day before + day of) and moments (morning of occurs_on), from 09:00 local.
 //        Day-of birthday and moment reminders are also stored as nudges for the Nudges tab.
@@ -22,6 +23,7 @@ import type { DemoRunResponse, NotificationPref, NotificationType } from '../_sh
 
 const FIRST_HOUR = 9;
 const SUNDAY_HOUR = 10;
+const SUNDAY_EVENING_HOUR = 18; // reminder for anyone who hasn't sent their egg
 const LAST_HOUR = 21; // exclusive
 const SPOTLIGHT_DAYS_AHEAD = 7;
 
@@ -129,6 +131,22 @@ Deno.serve(async (req) => {
     sundayPairs += (data as number) ?? 0;
   }
 
+  // this week's pairs and sent eggs (for the Sunday evening reminder)
+  const since = new Date(Date.now() - 8 * 86400_000).toISOString();
+  const [pairsQ, eggsQ] = await Promise.all([
+    db.from('sunday_pairs').select('circle_id, period_key, giver_id, receiver_id').gte('created_at', since),
+    db.from('shares').select('circle_id, period_key, author_id').eq('kind', 'sunday')
+      .not('recipient_id', 'is', null).gte('created_at', since),
+  ]);
+  if (pairsQ.error || eggsQ.error) return json({ error: (pairsQ.error ?? eggsQ.error)!.message }, 500);
+  const sendTo = new Map<string, string>(); // `${circle}:${week}:${giver}` -> receiver
+  const sentFrom = new Map<string, string>(); // `${circle}:${week}:${receiver}` -> giver
+  for (const p of pairsQ.data ?? []) {
+    sendTo.set(`${p.circle_id}:${p.period_key}:${p.giver_id}`, p.receiver_id as string);
+    sentFrom.set(`${p.circle_id}:${p.period_key}:${p.receiver_id}`, p.giver_id as string);
+  }
+  const sent = new Set((eggsQ.data ?? []).map((e) => `${e.circle_id}:${e.period_key}:${e.author_id}`));
+
   // today's prompt per local date (same for everyone that day)
   const prompts = new Map<string, string>();
   const promptFor = async (date: string) => {
@@ -156,6 +174,23 @@ Deno.serve(async (req) => {
           log: { ...base, kind: 'sunday', period_key: local.isoWeek },
           title: cName,
           body: "sunny sunday! ☀️ crack your egg to see who you're sending to",
+          data: { type: 'share_open', circle_id: circleId, target_id: local.isoWeek },
+          pref: 'sunday',
+        });
+      }
+
+      // Sunday evening: haven't sent my egg yet
+      const myPerson = sendTo.get(`${circleId}:${local.isoWeek}:${me.user_id}`);
+      if (local.weekday === 0 && local.hour >= SUNDAY_EVENING_HOUR && myPerson
+          && !sent.has(`${circleId}:${local.isoWeek}:${me.user_id}`)) {
+        const from = sentFrom.get(`${circleId}:${local.isoWeek}:${me.user_id}`);
+        const waiting = from && sent.has(`${circleId}:${local.isoWeek}:${from}`);
+        candidates.push({
+          log: { ...base, kind: 'sunday_eve', period_key: local.isoWeek },
+          title: cName,
+          body: waiting
+            ? `${firstName(profiles.get(from))}'s egg is waiting for you 🥚 send yours to open it`
+            : `don't forget your sunday egg for ${firstName(profiles.get(myPerson))} 🍳`,
           data: { type: 'share_open', circle_id: circleId, target_id: local.isoWeek },
           pref: 'sunday',
         });

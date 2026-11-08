@@ -33,6 +33,15 @@ commands run from the repo root.
 | 6 | Informer | Engagement chart dips over the last 3 days, without saying who |
 | 7 *(optional)* | Demo screen | **Sunday 10:30 am**: Sunday-share prompt + spotlight on every phone |
 
+**Design v0.3 flows (also set up by Reset demo):**
+
+| Who | What they see after Reset demo | Live moment |
+| --- | --- | --- |
+| Valerie | Today is **her day** for the daily photo (not posted yet). Group stack shows the last 6 days' photos (Ella skipped hers 3 days ago) | Post today's photo → the other three get *"Valerie's photo is up 📷"* |
+| Johnathon | Sunday: **Caden's egg is waiting** (gift), can't open it yet | Send his own egg to Caden → Caden's egg opens for him, Caden gets *"Johnathon sent you an egg 🥚 tap to open it"* |
+| Caden | Sunday: sent, **"still frying"**, waiting on Johnathon | Opens Johnathon's egg after the step above |
+| Valerie, Ella | Sunday: **uncracked** egg (each other's person, so the quiet member is paired with a friend) | Crack → see who you're sending to |
+
 Talking points: drift and "cover" nudges are worded by the same prompt and look identical, so a
 nudge never reveals that someone went quiet. Only counts and timing are used, never message content.
 
