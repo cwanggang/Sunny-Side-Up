@@ -5,6 +5,14 @@ html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; -
 *, *::before, *::after { box-sizing: border-box; }
 button { appearance: none; border: 0; background: none; padding: 0; margin: 0; font: inherit; color: inherit; cursor: pointer; }
 input, textarea { -webkit-user-select: text; user-select: text; }
+/* iOS web view (ours, not from the prototype): date/time inputs keep an intrinsic minimum width and
+   ignore width:100%, and grid columns grow to their widest no-wrap child. Both pushed the new-event
+   form past the right edge until a focused field got scrolled into view. */
+input[type="date"], input[type="time"] { -webkit-appearance: none; appearance: none; display: block; min-width: 0; max-width: 100%; min-height: 46px; text-align: left; }
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.field, .field > input, .field > textarea, .field > select { min-width: 0; max-width: 100%; }
+.ne-cols, .ne-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.ne-block, .ne-col { min-width: 0; }
 img, svg { -webkit-user-drag: none; -webkit-touch-callout: none; }
 svg { display: block; }
 :root {
