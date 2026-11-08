@@ -31,29 +31,29 @@ export function useCircle(id: string): Query<Circle> {
 }
 
 /** Members through the `circle_profiles` view (safe fields only). */
+export async function fetchCircleMembers(id: string): Promise<CircleMember[]> {
+  const rows = unwrap(await getSupabase().from('circle_profiles').select('*').eq('circle_id', id).order('joined_at'));
+  return rows.flatMap((r) =>
+    r.id
+      ? [
+          {
+            userId: r.id,
+            displayName: r.display_name || 'Friend',
+            avatarPath: r.avatar_path,
+            birthday: r.birthday,
+            role: r.role ?? 'member',
+            joinedAt: r.joined_at ?? '',
+          },
+        ]
+      : [],
+  );
+}
+
 export function useCircleMembers(id: string): Query<CircleMember[]> {
   return useQuery<CircleMember[], Error>({
     queryKey: membersKey(id),
     enabled: !!id,
-    queryFn: async () => {
-      const rows = unwrap(
-        await getSupabase().from('circle_profiles').select('*').eq('circle_id', id).order('joined_at'),
-      );
-      return rows.flatMap((r) =>
-        r.id
-          ? [
-              {
-                userId: r.id,
-                displayName: r.display_name || 'Friend',
-                avatarPath: r.avatar_path,
-                birthday: r.birthday,
-                role: r.role ?? 'member',
-                joinedAt: r.joined_at ?? '',
-              },
-            ]
-          : [],
-      );
-    },
+    queryFn: () => fetchCircleMembers(id),
   });
 }
 

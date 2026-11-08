@@ -16,9 +16,18 @@ import {
   useMyCircles,
 } from './circles';
 import { useFeed, useReact, useSendEgg, useSendPhoto, useSendText, useSendVoice } from './feed';
+import { useHangoutIdeas, useReportAppOpen } from './hangouts';
 import { makeInviteLinkHandler } from './invite';
 import { useNotifications } from './notifications';
 import { useConsent, useMyProfile, useUpdateConsent, useUpdateProfile } from './profile';
+import {
+  useBirthdays,
+  useCreateMoment,
+  useMoments,
+  usePostShare,
+  useSpotlight,
+  useSundayShare,
+} from './rhythm';
 import { useNotificationRouting } from './routing';
 import { useMediaUrl } from './storage';
 import type { ApiSurface, Mutation, Query } from './surface';
@@ -83,17 +92,18 @@ export const api: ApiSurface = {
   useMediaUrl,
 
   // Rhythm and closeness
-  useSundayShare: (circleId) => useStubQuery(['sunday', circleId], 'A3.1'),
-  usePostShare: () => useStubMutation('A3.1'),
-  useSpotlight: (circleId) => useStubQuery(['spotlight', circleId], 'A3.2'),
-  useBirthdays: (circleId) => useStubQuery(['birthdays', circleId], 'A3.3'),
-  useMoments: (circleId) => useStubQuery(['moments', circleId], 'A3.3'),
-  useCreateMoment: () => useStubMutation('A3.3'),
+  useSundayShare,
+  usePostShare,
+  useSpotlight,
+  useBirthdays,
+  useMoments,
+  useCreateMoment,
 
   // Nudges and hangouts
   useMyNudges: () => useStubQuery(['nudges'], 'A4.6'),
   useMarkNudgeActed: () => useStubMutation('A4.6'),
-  useHangoutIdeas: (circleId) => useStubQuery(['hangouts', circleId], 'A3.4'),
+  useHangoutIdeas,
+  useReportAppOpen,
 
   // Device
   useNotifications,

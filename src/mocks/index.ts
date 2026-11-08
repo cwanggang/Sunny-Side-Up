@@ -172,17 +172,25 @@ export const api: ApiSurface = {
   useVoicePlayer: useMockVoicePlayer,
   useMediaUrl: (path) => useMockQuery(['media-url', path], 'https://picsum.photos/400'),
 
-  useSundayShare: (circleId) => useMockQuery(['sunday', circleId], { periodKey: '2026-W45', isOpen: true, posts: sundayPosts }),
+  useSundayShare: (circleId) =>
+    useMockQuery(['sunday', circleId], {
+      periodKey: '2026-W45',
+      isOpen: true,
+      posts: sundayPosts,
+      previousPeriodKey: '2026-W44',
+      previousPosts: [],
+    }),
   usePostShare: () => useMockMutation(),
   useSpotlight: (circleId) =>
     useMockQuery(['spotlight', circleId], {
       today: { day: dateIn(0), userId: 'u-valerie', displayName: nameOf('u-valerie') },
       week: members.map((m, i) => ({ day: dateIn(i), userId: m.userId, displayName: m.displayName })),
+      posts: [],
     }),
   useBirthdays: (circleId) =>
     useMockQuery(['birthdays', circleId], [
-      { userId: 'u-ella', displayName: 'Ella', birthday: '2004-11-20', nextOn: '2026-11-20' },
-      { userId: 'u-valerie', displayName: 'Valerie', birthday: '2005-01-09', nextOn: '2027-01-09' },
+      { userId: 'u-ella', displayName: 'Ella', birthday: '2004-11-20', nextOn: '2026-11-20', daysUntil: 13 },
+      { userId: 'u-valerie', displayName: 'Valerie', birthday: '2005-01-09', nextOn: '2027-01-09', daysUntil: 63 },
     ]),
   useMoments: (circleId) => useMockQuery(['moments', circleId], moments),
   useCreateMoment: () => useMockMutation(),
@@ -195,6 +203,8 @@ export const api: ApiSurface = {
       { title: 'Taco night', why: 'Cheap and good for a group of four', where: 'Ninth Street' },
       { title: 'Board games', why: 'Cozy if the weather turns', where: "Someone's apartment" },
     ]),
+
+  useReportAppOpen: () => {},
 
   useNotifications: () => ({ unread: [] }),
   useNotificationRouting: () => {},

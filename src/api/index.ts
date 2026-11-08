@@ -53,6 +53,7 @@ export const {
   useMyNudges,
   useMarkNudgeActed,
   useHangoutIdeas,
+  useReportAppOpen,
   // Device
   useNotifications,
   useNotificationRouting,
@@ -65,6 +66,7 @@ export const {
 
 export { HEALTHKIT_ENABLED, USE_MOCKS } from './config';
 export { rememberInviteCode } from './invite';
+export { isVoicePath } from './rhythm';
 // A4.7 demo controls (Developer B handoff); only app/(dev)/demo uses these.
 export { demoKeyConfigured, describeDemoAction, useDemoAction, type DemoAction } from './demo';
 export { ApiProvider } from './provider';
