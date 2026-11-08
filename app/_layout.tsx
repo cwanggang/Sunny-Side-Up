@@ -63,6 +63,18 @@ function RootStack() {
         <Stack.Screen name="circle/[id]/birthdays" />
         <Stack.Screen name="circle/[id]/hangouts" />
         <Stack.Screen name="(dev)/demo" />
+        {/* Design v0.4 screens (Developer B) */}
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="calendar" />
+        <Stack.Screen name="coop/new" />
+        <Stack.Screen name="coop/join" />
+        <Stack.Screen name="circle/[id]/coop" />
+        <Stack.Screen name="circle/[id]/events" />
+        <Stack.Screen name="circle/[id]/gallery" />
+        <Stack.Screen name="circle/[id]/daily" />
+        <Stack.Screen name="event/[eventId]" />
+        <Stack.Screen name="event/new" />
+        <Stack.Screen name="member/[userId]" />
       </Stack.Protected>
 
       <Stack.Screen name="join/[code]" />
