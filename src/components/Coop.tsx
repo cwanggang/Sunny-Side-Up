@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
 
 import { formatCoopCode, inviteMessage, useMediaUrl, type CoopSummary, type Person } from '@/api';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 import { Egg } from './Egg';
 
@@ -191,38 +191,38 @@ export function KV({ k, children }: { k: string; children: ReactNode }) {
 const styles = StyleSheet.create({
   stack: { flexDirection: 'row', alignItems: 'center' },
   stackLabel: { ...type.caption, color: colors.textSecondary, marginLeft: spacing.sm },
-  carton: { borderRadius: radii.xl, backgroundColor: '#E8DFCD', borderWidth: 1.5, borderColor: palette.line, overflow: 'hidden', ...shadow.card },
+  carton: { ...shadow.card, borderRadius: radii.xl, backgroundColor: '#E8DFCD', borderWidth: 1.5, borderColor: palette.line, overflow: 'hidden' },
   lid: { backgroundColor: '#F1EADB', paddingVertical: spacing.lg, alignItems: 'center', gap: 2, borderBottomWidth: 1.5, borderColor: palette.line },
   lidName: { ...type.title, color: colors.text },
   hint: { ...type.caption, color: colors.textMuted },
   tray: { padding: spacing.lg, gap: spacing.md },
   trayRow: { flexDirection: 'row', justifyContent: 'center', gap: spacing.lg },
   seat: { width: 76, alignItems: 'center', gap: 2 },
-  seatName: { ...type.caption, fontWeight: '700', color: colors.text },
+  seatName: { ...type.caption, ...weight('700'), color: colors.text },
   plus: { width: 52, height: 66, borderRadius: 26, borderWidth: 2, borderStyle: 'dashed', borderColor: palette.ink3, alignItems: 'center', justifyContent: 'center' },
   plusText: { ...type.title, color: colors.textMuted },
   more: { ...type.caption, textAlign: 'center', color: colors.text },
-  lidClosed: { borderRadius: radii.xl, backgroundColor: '#F1EADB', borderWidth: 1.5, borderColor: palette.line, padding: spacing.xl, alignItems: 'center', gap: spacing.sm, ...shadow.card },
+  lidClosed: { ...shadow.card, borderRadius: radii.xl, backgroundColor: '#F1EADB', borderWidth: 1.5, borderColor: palette.line, padding: spacing.xl, alignItems: 'center', gap: spacing.sm },
   codeLabel: { ...type.label, color: colors.textSecondary },
   code: { ...type.display, letterSpacing: 2, color: colors.text },
   copyBtn: { paddingVertical: spacing.sm, paddingHorizontal: spacing.xl, borderRadius: radii.pill, backgroundColor: colors.primary },
-  copyText: { ...type.body, fontWeight: '700', color: colors.primaryText },
+  copyText: { ...type.body, ...weight('700'), color: colors.primaryText },
   card: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radii.lg, backgroundColor: colors.surface, ...shadow.card },
   cover: { width: 54, height: 54, borderRadius: radii.md, backgroundColor: colors.surfaceAlt, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   cardText: { flex: 1, gap: 2 },
   cardName: { ...type.heading, color: colors.text },
   cardSub: { ...type.caption, color: colors.textMuted },
   streak: { paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radii.pill, backgroundColor: colors.primarySoft },
-  streakText: { ...type.caption, fontWeight: '700', color: colors.text },
+  streakText: { ...type.caption, ...weight('700'), color: colors.text },
   seg: { flexDirection: 'row', padding: 3, borderRadius: radii.pill, backgroundColor: colors.surfaceAlt, gap: 2 },
   segBtn: { flex: 1, paddingVertical: spacing.sm, borderRadius: radii.pill, alignItems: 'center' },
   segOn: { backgroundColor: colors.surface, ...shadow.card },
-  segText: { ...type.caption, fontWeight: '600', color: colors.textSecondary },
-  segTextOn: { color: colors.text, fontWeight: '700' },
+  segText: { ...type.caption, ...weight('600'), color: colors.textSecondary },
+  segTextOn: { color: colors.text, ...weight('700') },
   eggBtn: { alignSelf: 'center', alignItems: 'center', gap: spacing.xs, marginTop: spacing.md },
-  eggYolk: { width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, borderWidth: 6, borderColor: colors.surface, alignItems: 'center', justifyContent: 'center', ...shadow.card },
+  eggYolk: { ...shadow.card, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, borderWidth: 6, borderColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   eggIcon: { ...type.title, color: colors.primaryText },
-  eggLabel: { ...type.caption, fontWeight: '700', color: colors.text },
+  eggLabel: { ...type.caption, ...weight('700'), color: colors.text },
   section: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.md },
   sectionTitle: { ...type.heading, color: colors.text },
   kv: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.sm, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line },

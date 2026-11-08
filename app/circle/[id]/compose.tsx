@@ -18,7 +18,7 @@ import {
 import { Body, Button, PhotoThumb, Screen, VoiceMemo } from '@/components';
 import { Avatar, Segmented } from '@/components/Coop';
 import { Egg } from '@/components/Egg';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 const MAX_VOICE_SECONDS = 60;
 const KINDS = ['egg', 'text', 'photo', 'voice'] as const;
@@ -219,14 +219,14 @@ const styles = StyleSheet.create({
   people: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   person: { width: 76, alignItems: 'center', gap: 4, paddingVertical: spacing.sm, borderRadius: radii.lg, borderWidth: 2, borderColor: 'transparent' },
   personOn: { borderColor: palette.ink, backgroundColor: colors.primarySoft },
-  personName: { ...type.caption, fontWeight: '700', color: colors.text },
+  personName: { ...type.caption, ...weight('700'), color: colors.text },
   everyone: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  panel: { alignItems: 'center', gap: spacing.md, padding: spacing.xl, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  panel: { ...shadow.card, alignItems: 'center', gap: spacing.md, padding: spacing.xl, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink },
   panelText: { ...type.heading, color: colors.text, textAlign: 'center' },
   input: { ...type.body, alignSelf: 'stretch', minHeight: 110, textAlignVertical: 'top', color: colors.text, backgroundColor: colors.surfaceAlt, borderRadius: radii.lg, padding: spacing.lg },
   row: { flexDirection: 'row', gap: spacing.md, alignSelf: 'stretch' },
   half: { flex: 1 },
-  yolk: { width: 110, height: 110, borderRadius: 55, backgroundColor: colors.yolk, borderWidth: 10, borderColor: colors.eggWhite, alignItems: 'center', justifyContent: 'center', ...shadow.card },
+  yolk: { ...shadow.card, width: 110, height: 110, borderRadius: 55, backgroundColor: colors.yolk, borderWidth: 10, borderColor: colors.eggWhite, alignItems: 'center', justifyContent: 'center' },
   yolkRec: { backgroundColor: colors.accent },
   yolkText: { fontSize: 30, color: colors.text },
   time: { ...type.title, color: colors.text },

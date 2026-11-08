@@ -6,7 +6,7 @@ import { pickPhotos, useAddPhotos, useAlbumCounts, useCoop, useEvents, useGaller
 import { Body, Screen } from '@/components';
 import { EggButton, Section } from '@/components/Coop';
 import { Masonry } from '@/components/Gallery';
-import { colors, radii, shadow, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type, weight } from '@/theme';
 
 // Design v0.4 coop gallery (Developer B): event albums on top, then every photo in a portfolio grid.
 export default function GalleryScreen() {
@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
   albums: { gap: spacing.md, paddingVertical: spacing.xs },
   album: { width: 140, gap: 2 },
   aCover: { width: 140, height: 140, borderRadius: radii.lg, backgroundColor: colors.surfaceAlt, overflow: 'hidden', ...shadow.card },
-  aTitle: { ...type.body, fontWeight: '700', color: colors.text },
+  aTitle: { ...type.body, ...weight('700'), color: colors.text },
   count: { ...type.caption, color: colors.textMuted },
 });

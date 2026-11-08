@@ -4,7 +4,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useCoop, useCoopPeople, useLeaveCoop, useSession } from '@/api';
 import { Body, Button, Screen } from '@/components';
 import { Carton } from '@/components/Coop';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 // Design v0.4 coop dashboard (Developer B): the egg carton (tap an egg to crack a friend's
 // profile; tap the lid for the code), the description, and the coop's pages.
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   kicker: { ...type.caption, color: colors.textSecondary, textAlign: 'center' },
   desc: { ...type.body, color: colors.textSecondary, textAlign: 'center' },
   nav: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'space-between' },
-  tile: { width: '31.5%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.xs, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  tile: { ...shadow.card, width: '31.5%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.xs, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink },
   tileIcon: { fontSize: 28 },
-  tileText: { ...type.caption, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  tileText: { ...type.caption, ...weight('700'), color: colors.text, textAlign: 'center' },
 });

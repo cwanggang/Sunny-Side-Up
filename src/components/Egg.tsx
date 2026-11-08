@@ -1,7 +1,7 @@
 // Design v0.3 egg art, drawn with plain Views (no SVG package, so no native re-install).
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, eggSwatches, palette, radii, spacing, type, type EggSwatch } from '@/theme';
+import { colors, eggSwatches, palette, radii, spacing, type, type EggSwatch, weight } from '@/theme';
 
 const swatchColor = (swatch?: string) => eggSwatches[(swatch as EggSwatch) ?? 'shell'] ?? eggSwatches.shell;
 
@@ -141,7 +141,7 @@ export function EggStylePicker({
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   egg: { overflow: 'hidden', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(31,41,69,0.12)' },
-  eggText: { ...type.body, fontWeight: '700', color: colors.text, textAlign: 'center' },
+  eggText: { ...type.body, ...weight('700'), color: colors.text, textAlign: 'center' },
   zigzag: { position: 'absolute', color: palette.white, opacity: 0.9, letterSpacing: -2 },
   white: { backgroundColor: colors.eggWhite, borderWidth: 1, borderColor: palette.hair },
   name: { ...type.heading, color: colors.text, marginTop: spacing.xs },
@@ -152,5 +152,5 @@ const styles = StyleSheet.create({
   swatchOn: { borderColor: colors.text },
   patternChip: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.surface },
   patternChipOn: { borderColor: colors.text, backgroundColor: colors.primarySoft },
-  patternLabel: { ...type.caption, fontWeight: '600', color: colors.text },
+  patternLabel: { ...type.caption, ...weight('600'), color: colors.text },
 });

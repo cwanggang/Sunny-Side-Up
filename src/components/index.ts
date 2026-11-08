@@ -9,3 +9,4 @@ export { PhotoThumb, VoiceMemo } from './Media';
 export { ShareComposer, SharePost } from './Share';
 export { Card, NotificationSettings, ReactionBar } from './Card';
 export { Egg, EggStylePicker, FriedEgg, Pan } from './Egg';
+export { SettingsGroup, SettingsRow } from './Settings';

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useMarkNudgeActed, useMyNudges, useSendEgg, type Nudge } from '@/api';
 import { Body, Button, Screen } from '@/components';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 function timeAgo(iso: string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -71,6 +71,6 @@ function NudgeCard({ nudge }: { nudge: Nudge }) {
 const styles = StyleSheet.create({
   card: { gap: spacing.sm, padding: spacing.lg, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border },
   done: { opacity: 0.6 },
-  message: { ...type.body, fontWeight: '600', color: colors.text },
+  message: { ...type.body, ...weight('600'), color: colors.text },
   meta: { ...type.caption, color: colors.textMuted },
 });

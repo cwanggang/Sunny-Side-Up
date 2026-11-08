@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { eggOf, factsOf, useCoops, useMyFullProfile, usePeople, useSession, type Person } from '@/api';
 import { Body, Card, Egg, FriedEgg, Screen } from '@/components';
 import { Avatar } from '@/components/Coop';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 const COLOR_WORDS: Record<string, string> = {
   'tomato red': '#E5533D', 'sky blue': '#7DB8E8', 'forest green': '#3F7F55', 'burnt orange': '#CC6A2C', sage: '#A8B98F',
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   label: { ...type.label, color: colors.textSecondary, marginTop: spacing.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: { paddingVertical: spacing.xs + 2, paddingHorizontal: spacing.md, borderRadius: radii.pill, backgroundColor: colors.primarySoft },
-  chipText: { ...type.caption, fontWeight: '700', color: colors.text },
+  chipText: { ...type.caption, ...weight('700'), color: colors.text },
   fact: { paddingVertical: spacing.sm, gap: 2 },
   factK: { ...type.label, color: colors.textSecondary },
   factRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },

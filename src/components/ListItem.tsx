@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, shadow, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type, weight } from '@/theme';
 
 interface ListItemProps {
   title: string;
@@ -8,7 +8,7 @@ interface ListItemProps {
   onPress?: () => void;
 }
 
-/** One tappable row: title, optional subtitle, chevron when tappable. */
+/** One row (the prototype's `.set-row`): white card, 1px line, title + optional subtitle, chevron when tappable. */
 export function ListItem({ title, subtitle, onPress }: ListItemProps) {
   return (
     <Pressable
@@ -28,17 +28,19 @@ export function ListItem({ title, subtitle, onPress }: ListItemProps) {
 
 const styles = StyleSheet.create({
   row: {
+    ...shadow.card,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md + 2,
+    gap: 14,
+    minHeight: 52,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
     backgroundColor: colors.surface,
-    ...shadow.card,
   },
-  pressed: { opacity: 0.6 },
-  text: { flex: 1, gap: spacing.xs },
-  title: { ...type.heading, color: colors.text },
-  subtitle: { ...type.caption, color: colors.textMuted },
+  pressed: { backgroundColor: colors.hairline },
+  text: { flex: 1, gap: 3 },
+  title: { ...type.body, ...weight('500'), color: colors.text },
+  subtitle: { ...type.caption, fontSize: 12, color: colors.textMuted },
   chevron: { ...type.title, color: colors.textMuted },
 });

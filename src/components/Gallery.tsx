@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useMediaUrl } from '@/api';
-import { colors, palette, radii, spacing, type } from '@/theme';
+import { colors, palette, radii, spacing, type, weight } from '@/theme';
 
 export interface GridPhoto {
   id: string;
@@ -181,6 +181,6 @@ const styles = StyleSheet.create({
   sel: { backgroundColor: colors.primary },
   dayNum: { ...type.body, color: colors.text },
   past: { color: colors.textMuted },
-  selText: { fontWeight: '700' },
+  selText: { ...weight('700') },
   dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.primaryDeep, position: 'absolute', bottom: 5 },
 });

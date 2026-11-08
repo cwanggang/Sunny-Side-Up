@@ -6,7 +6,7 @@ import { useCoops, useCreateEvent, usePeople, useSession, type EventRole, type P
 import { Body, Button, Chip, Screen, TextField } from '@/components';
 import { Avatar } from '@/components/Coop';
 import { ymd } from '@/components/Gallery';
-import { colors, radii, shadow, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type, weight } from '@/theme';
 
 const ROLES: EventRole[] = ['edit', 'view', 'comment'];
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   col: { flex: 1, gap: spacing.xs, padding: spacing.sm, borderRadius: radii.lg, backgroundColor: colors.surface, ...shadow.card },
   sub: { ...type.label, color: colors.textMuted, marginTop: spacing.xs },
   pRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, paddingVertical: 3 },
-  pName: { flex: 1, ...type.caption, fontWeight: '600', color: colors.text },
+  pName: { flex: 1, ...type.caption, ...weight('600'), color: colors.text },
   tag: { ...type.label, fontSize: 10, color: colors.textMuted },
   icon: { ...type.heading, color: colors.text, paddingHorizontal: 2 },
 });

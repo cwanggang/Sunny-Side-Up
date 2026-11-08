@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useCoop, useCoopPeople, useDaily, useSession } from '@/api';
 import { Body, Button, Card, Egg, PhotoThumb, Screen } from '@/components';
 import { Avatar } from '@/components/Coop';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -95,6 +95,6 @@ const styles = StyleSheet.create({
   photo: { minHeight: 120, alignItems: 'center', justifyContent: 'center', borderRadius: radii.lg, backgroundColor: colors.surfaceAlt, padding: spacing.sm },
   empty: { ...type.body, color: colors.textMuted },
   by: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  byName: { ...type.body, fontWeight: '700', color: colors.text },
+  byName: { ...type.body, ...weight('700'), color: colors.text },
   prompt: { ...type.caption, fontStyle: 'italic', color: colors.textSecondary },
 });

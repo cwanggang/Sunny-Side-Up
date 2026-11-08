@@ -2,7 +2,7 @@ import { useNavigation } from 'expo-router';
 import { useLayoutEffect, type ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { colors, spacing, type } from '@/theme';
+import { colors, spacing, type, weight } from '@/theme';
 
 interface ScreenProps {
   /** Header title for this screen. */
@@ -24,7 +24,7 @@ export function Screen({ title, note, refreshing, onRefresh, children }: ScreenP
       ...(title ? { title } : {}),
       headerStyle: { backgroundColor: colors.background },
       headerTintColor: colors.text,
-      headerTitleStyle: { fontFamily: type.heading.fontFamily, fontWeight: '700', color: colors.text },
+      headerTitleStyle: { ...weight('700'), color: colors.text },
       headerShadowVisible: false,
     });
   }, [navigation, title]);

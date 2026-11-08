@@ -8,7 +8,7 @@ import { Body } from '@/components';
 import { Avatar, EggButton } from '@/components/Coop';
 import { FriedEgg } from '@/components/Egg';
 import { BottomEgg, CoopList, CoopStack, CornerMenu, SundayTile, nextEventByCoop, type MenuItem } from '@/components/Home';
-import { colors, palette, spacing, type } from '@/theme';
+import { colors, palette, spacing, type, weight } from '@/theme';
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -141,12 +141,12 @@ const styles = StyleSheet.create({
   chev: { ...type.title, color: colors.text, marginTop: -10 },
   kicker: { ...type.label, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.lg },
   empty: { alignItems: 'center', gap: spacing.md, marginTop: spacing.xl },
-  link: { ...type.caption, fontWeight: '700', color: colors.textSecondary, textDecorationLine: 'underline' },
+  link: { ...type.caption, ...weight('700'), color: colors.textSecondary, textDecorationLine: 'underline' },
   tiles: { gap: spacing.md },
   cornerL: { position: 'absolute', left: spacing.md },
   cornerWhite: { width: 64, height: 56, borderRadius: 30, backgroundColor: colors.eggWhite, borderWidth: 2.5, borderColor: palette.ink, alignItems: 'center', justifyContent: 'center' },
   cornerYolk: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.yolk, borderWidth: 2.5, borderColor: '#A8721F' },
   cornerR: { position: 'absolute', right: spacing.md, alignItems: 'center', gap: 2 },
   cornerAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.eggWhite, borderWidth: 2.5, borderColor: palette.ink, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  handle: { ...type.caption, fontWeight: '700', color: colors.text, backgroundColor: colors.eggWhite, paddingHorizontal: spacing.sm, borderRadius: 999, overflow: 'hidden' },
+  handle: { ...type.caption, ...weight('700'), color: colors.text, backgroundColor: colors.eggWhite, paddingHorizontal: spacing.sm, borderRadius: 999, overflow: 'hidden' },
 });
