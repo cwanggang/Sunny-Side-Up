@@ -266,6 +266,161 @@ export type Database = {
           },
         ]
       }
+      egg_war_people: {
+        Row: {
+          choice: Database["public"]["Enums"]["egg_war_choice"]
+          updated_at: string
+          user_id: string
+          war_id: string
+        }
+        Insert: {
+          choice: Database["public"]["Enums"]["egg_war_choice"]
+          updated_at?: string
+          user_id: string
+          war_id: string
+        }
+        Update: {
+          choice?: Database["public"]["Enums"]["egg_war_choice"]
+          updated_at?: string
+          user_id?: string
+          war_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "egg_war_people_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "egg_war_people_war_id_fkey"
+            columns: ["war_id"]
+            isOneToOne: false
+            referencedRelation: "egg_wars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      egg_war_snipes: {
+        Row: {
+          caption: string | null
+          circle_id: string
+          created_at: string
+          id: string
+          media_path: string
+          sniper_id: string
+          target_id: string
+          war_id: string
+        }
+        Insert: {
+          caption?: string | null
+          circle_id: string
+          created_at?: string
+          id?: string
+          media_path: string
+          sniper_id: string
+          target_id: string
+          war_id: string
+        }
+        Update: {
+          caption?: string | null
+          circle_id?: string
+          created_at?: string
+          id?: string
+          media_path?: string
+          sniper_id?: string
+          target_id?: string
+          war_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "egg_war_snipes_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "egg_war_snipes_sniper_id_fkey"
+            columns: ["sniper_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "egg_war_snipes_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "egg_war_snipes_war_id_fkey"
+            columns: ["war_id"]
+            isOneToOne: false
+            referencedRelation: "egg_wars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      egg_wars: {
+        Row: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        Insert: {
+          circle_id: string
+          created_at?: string
+          final_board?: Json | null
+          id?: string
+          live_ends_at?: string | null
+          members: number
+          resolved_at?: string | null
+          snipe_count?: number
+          started_by?: string | null
+          state?: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        Update: {
+          circle_id?: string
+          created_at?: string
+          final_board?: Json | null
+          id?: string
+          live_ends_at?: string | null
+          members?: number
+          resolved_at?: string | null
+          snipe_count?: number
+          started_by?: string | null
+          state?: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "egg_wars_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "egg_wars_started_by_fkey"
+            columns: ["started_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       engagement_daily: {
         Row: {
           circle_id: string
@@ -1074,6 +1229,28 @@ export type Database = {
         Args: { p_event_id: string; p_people: Json }
         Returns: number
       }
+      cancel_egg_war: {
+        Args: { p_war_id: string }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       circle_daily: {
         Args: { p_circle_id: string; p_days?: number; p_today?: string }
         Returns: {
@@ -1156,7 +1333,10 @@ export type Database = {
       }
       create_notifications: { Args: { p_rows: Json }; Returns: number }
       daily_prompt: { Args: { p_day?: string }; Returns: string }
+      delete_snipe: { Args: { p_snipe_id: string }; Returns: undefined }
       demo_reseed: { Args: { p_emails?: string[] }; Returns: Json }
+      demo_skip_egg_war: { Args: { p_war_id: string }; Returns: Json }
+      egg_war_status: { Args: { p_circle_id: string }; Returns: Json }
       ensure_sunday_pairs: {
         Args: { p_circle_id: string; p_period_key: string }
         Returns: number
@@ -1180,7 +1360,76 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      join_egg_war: {
+        Args: { p_war_id: string }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
+      leave_egg_war: {
+        Args: { p_war_id: string }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      post_snipe: {
+        Args: {
+          p_caption?: string
+          p_id?: string
+          p_media_path: string
+          p_target_id: string
+          p_war_id: string
+        }
+        Returns: {
+          caption: string | null
+          circle_id: string
+          created_at: string
+          id: string
+          media_path: string
+          sniper_id: string
+          target_id: string
+          war_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_war_snipes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       run_drift: { Args: { p_day?: string }; Returns: Json }
       set_event_chat_timer: {
         Args: { p_days: number; p_event_id: string }
@@ -1218,6 +1467,28 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      start_egg_war: {
+        Args: { p_circle_id: string }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       sunday_prompt: {
         Args: { p_name: string; p_week: string }
@@ -1270,10 +1541,37 @@ export type Database = {
       user_media_paths: { Args: { p_user_id: string }; Returns: string[] }
       username_available: { Args: { p_username: string }; Returns: boolean }
       verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
+      vote_egg_war: {
+        Args: {
+          p_choice: Database["public"]["Enums"]["egg_war_choice"]
+          p_war_id: string
+        }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_event_kind: "app_open"
       circle_role: "owner" | "member"
+      egg_war_choice: "in" | "out"
+      egg_war_state: "vote" | "live" | "off" | "over"
       event_role: "edit" | "comment" | "view"
       interaction_kind: "egg" | "photo" | "voice" | "text"
       notification_type:
@@ -1284,6 +1582,7 @@ export type Database = {
         | "birthday"
         | "moment"
         | "event"
+        | "egg_war"
       nudge_reason: "drift" | "cover" | "birthday" | "moment" | "spotlight"
       share_kind: "sunday" | "spotlight"
     }
@@ -1418,6 +1717,8 @@ export const Constants = {
     Enums: {
       app_event_kind: ["app_open"],
       circle_role: ["owner", "member"],
+      egg_war_choice: ["in", "out"],
+      egg_war_state: ["vote", "live", "off", "over"],
       event_role: ["edit", "comment", "view"],
       interaction_kind: ["egg", "photo", "voice", "text"],
       notification_type: [
@@ -1428,6 +1729,7 @@ export const Constants = {
         "birthday",
         "moment",
         "event",
+        "egg_war",
       ],
       nudge_reason: ["drift", "cover", "birthday", "moment", "spotlight"],
       share_kind: ["sunday", "spotlight"],

@@ -78,7 +78,7 @@ export interface DemoRunResponse {
 // subscribes to its own rows over Realtime, shows title/body as a local notification, routes on
 // type + circle_id + target_id when tapped, and sets read_at.
 
-export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment' | 'event';
+export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment' | 'event' | 'egg_war';
 
 /** Notification settings (consents.notify_*). Rows tagged with a pref skip users who turned it off. */
 export type NotificationPref = 'daily_photo' | 'sunday' | 'friend_posts';
@@ -131,4 +131,43 @@ export interface SundayStatus {
   my_share_id: string | null;
   their_share_id: string | null; // only once i_sent
   prompt: string;                // e.g. "what made you think of Jun this week?"
+}
+
+// ---------- Egg war (design v0.5 "play!", docs/proposals/egg-war-backend.md) ----------
+
+export type EggWarState = 'vote' | 'live' | 'off' | 'over';
+export type EggWarChoice = 'in' | 'out';
+
+export interface EggWarBoardRow {
+  user_id: string;
+  sniper: number; // times they egged someone
+  sniped: number; // times they got egged
+  score: number;  // sniper - sniped (can be negative)
+}
+
+/** rpc('egg_war_status', { p_circle_id }) -> EggWarStatus. Active war, else the latest finished one. */
+export interface EggWarStatus {
+  members: number;
+  need: number;        // opt-ins needed: more than half the coop
+  can_start: boolean;  // 3+ members and no vote/live war
+  war: null | {
+    id: string;
+    state: EggWarState;
+    started_by: string | null;
+    vote_ends_at: string;
+    live_ends_at: string | null;
+    created_at: string;
+    people: { user_id: string; choice: EggWarChoice }[];
+    board: EggWarBoardRow[];
+    snipes: number;
+  };
+}
+
+/** rpc('post_snipe', ...): upload the photo to mediaPath(circleId, snipeId, 'jpg') first. */
+export interface PostSnipeArgs {
+  p_war_id: string;
+  p_target_id: string;
+  p_media_path: string;
+  p_caption?: string | null; // 100 characters max
+  p_id?: string;             // the snipe id used in the media path
 }
