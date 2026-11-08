@@ -20,7 +20,13 @@ export function Screen({ title, note, children }: ScreenProps) {
   }, [navigation, title]);
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={styles.content}
+      // iOS headers and tab bars are translucent and overlap the scroll view; this insets content below/above them.
+      contentInsetAdjustmentBehavior="automatic"
+      keyboardShouldPersistTaps="handled"
+    >
       {note ? <Text style={styles.note}>{note}</Text> : null}
       {children}
     </ScrollView>

@@ -1,30 +1,33 @@
 // Mock implementation of the @/api surface, used when EXPO_PUBLIC_USE_MOCKS=true.
 // Same shapes as the real hooks, so screens can be built before the backend is wired.
 // Rule (plan.md §8): when a real hook changes shape, update its mock in the same commit.
+import { buildInviteLink } from '@/api/circles';
+import { makeInviteLinkHandler } from '@/api/invite';
 import type { ApiSurface, Mutation, Query } from '@/api/surface';
 import type {
   Circle,
   CircleMember,
   Consent,
+  ConsentUpdate,
   FeedItem,
   Moment,
   Nudge,
   Profile,
-  Session,
+  ProfileUpdate,
   Share,
   VoiceRecorder,
 } from '@/api/types';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-const ME = 'u-caden';
+import { MOCK_USER_ID, signInWithEmail, signOut, signUpWithEmail, useSession } from './auth';
+
+const ME = MOCK_USER_ID;
 const CIRCLE_ID = 'demo-circle';
 const now = new Date();
 const daysAgo = (n: number) => new Date(now.getTime() - n * 86_400_000).toISOString();
 const dateIn = (n: number) => new Date(now.getTime() + n * 86_400_000).toISOString().slice(0, 10);
 const delay = <T,>(value: T, ms = 250) => new Promise<T>((resolve) => setTimeout(() => resolve(value), ms));
-
-const session = { user: { id: ME, email: 'caden190wang@gmail.com' }, access_token: 'mock' } as unknown as Session;
 
 const profile: Profile = {
   id: ME,
@@ -87,6 +90,19 @@ function useMockMutation<TVars, TResult = void>(result?: TResult): Mutation<TVar
   return useMutation<TResult, Error, TVars>({ mutationFn: () => delay(result as TResult) });
 }
 
+/** Mock edit: merges the patch into the cached mock row so screens show the change. */
+function useMockPatch<TVars extends object, T extends object>(key: string, current: T): Mutation<TVars, T> {
+  const queryClient = useQueryClient();
+  return useMutation<T, Error, TVars>({
+    mutationFn: async (patch) => {
+      const prev = queryClient.getQueryData<T>(['mock', key]) ?? current;
+      const { avatarUri: _ignored, ...rest } = patch as TVars & { avatarUri?: string };
+      return delay({ ...prev, ...rest });
+    },
+    onSuccess: (next) => queryClient.setQueryData(['mock', key], next),
+  });
+}
+
 function useMockVoiceRecorder(): VoiceRecorder {
   const [isRecording, setRecording] = useState(false);
   const [uri, setUri] = useState<string | null>(null);
@@ -105,16 +121,16 @@ function useMockVoiceRecorder(): VoiceRecorder {
 }
 
 export const api: ApiSurface = {
-  // Auth: always signed in as Caden in mock mode.
-  useSession: () => ({ session, loading: false }),
-  signUpWithEmail: () => delay(undefined),
-  signInWithEmail: () => delay(undefined),
-  signOut: () => delay(undefined),
+  // Auth (mocks/auth.ts): starts signed in as Caden; sign out/in toggles it.
+  useSession,
+  signUpWithEmail,
+  signInWithEmail,
+  signOut,
 
   useMyProfile: () => useMockQuery(['profile'], profile),
-  useUpdateProfile: () => useMockMutation(),
+  useUpdateProfile: () => useMockPatch<ProfileUpdate & { avatarUri?: string }, Profile>('profile', profile),
   useConsent: () => useMockQuery(['consent'], consent),
-  useUpdateConsent: () => useMockMutation(),
+  useUpdateConsent: () => useMockPatch<ConsentUpdate, Consent>('consent', consent),
   usePause: () => useMockMutation(),
   useWhatTheAppSaw: () =>
     useMockQuery(['what-the-app-saw'], [
@@ -127,11 +143,7 @@ export const api: ApiSurface = {
   useCircleMembers: (id) => useMockQuery(['circle-members', id], members),
   useCreateCircle: () => useMockMutation(circle),
   useJoinCircle: () => useMockMutation(circle),
-  useInviteLink: () => ({
-    code: circle.invite_code,
-    url: `sunnysideup://join/${circle.invite_code}`,
-    message: `Join my circle on Sunny Side Up: sunnysideup://join/${circle.invite_code} (or enter code ${circle.invite_code})`,
-  }),
+  useInviteLink: () => buildInviteLink(circle),
   useLeaveCircle: () => useMockMutation(),
 
   useFeed: (circleId) => useMockQuery(['feed', circleId], feed),
@@ -172,7 +184,7 @@ export const api: ApiSurface = {
 
   useNotifications: () => ({ unread: [] }),
   useNotificationRouting: () => {},
-  useInviteLinkHandler: () => {},
+  useInviteLinkHandler: makeInviteLinkHandler(useSession),
 
   useSignalStatus: () =>
     useMockQuery(['signal-status'], {

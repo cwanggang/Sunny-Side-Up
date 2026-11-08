@@ -1,8 +1,24 @@
-// Real implementation of the @/api surface. In Phase 0 every hook is a stub that
-// fails with a clear "not implemented yet (task ID)" error; each task replaces
-// its stubs with real Supabase calls. Use EXPO_PUBLIC_USE_MOCKS=true until then.
+// Real implementation of the @/api surface. Each area lives in its own file (auth.ts,
+// profile.ts, circles.ts, ...); hooks not built yet are stubs that fail with a clear
+// "not implemented yet (task ID)" error. Use EXPO_PUBLIC_USE_MOCKS=true for those screens.
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+import { pickImage } from '@/native';
+
+import { signInWithEmail, signOut, signUpWithEmail, useSession } from './auth';
+import {
+  useCircle,
+  useCircleMembers,
+  useCreateCircle,
+  useInviteLink,
+  useJoinCircle,
+  useLeaveCircle,
+  useMyCircles,
+} from './circles';
+import { makeInviteLinkHandler } from './invite';
+import { useNotifications } from './notifications';
+import { useConsent, useMyProfile, useUpdateConsent, useUpdateProfile } from './profile';
+import { useMediaUrl } from './storage';
 import type { ApiSurface, Mutation, Query } from './surface';
 
 const notYet = (task: string) =>
@@ -26,28 +42,28 @@ const rejectWith = (task: string) => () => Promise.reject(notYet(task));
 
 export const api: ApiSurface = {
   // Auth (A1.1)
-  useSession: () => ({ session: null, loading: false }),
-  signUpWithEmail: rejectWith('A1.1'),
-  signInWithEmail: rejectWith('A1.1'),
-  signOut: rejectWith('A1.1'),
+  useSession,
+  signUpWithEmail,
+  signInWithEmail,
+  signOut,
 
   // Profile and consent
-  useMyProfile: () => useStubQuery(['profile'], 'A1.2'),
-  useUpdateProfile: () => useStubMutation('A1.2'),
-  useConsent: () => useStubQuery(['consent'], 'A1.2'),
-  useUpdateConsent: () => useStubMutation('A1.2'),
+  useMyProfile,
+  useUpdateProfile,
+  useConsent,
+  useUpdateConsent,
   usePause: () => useStubMutation('A4.6'),
   useWhatTheAppSaw: () => useStubQuery(['what-the-app-saw'], 'A4.6'),
   useDeleteAccount: () => useStubMutation('A4.6'),
 
   // Circles (A1.3)
-  useMyCircles: () => useStubQuery(['circles'], 'A1.3'),
-  useCircle: (id) => useStubQuery(['circle', id], 'A1.3'),
-  useCircleMembers: (id) => useStubQuery(['circle-members', id], 'A1.3'),
-  useCreateCircle: () => useStubMutation('A1.3'),
-  useJoinCircle: () => useStubMutation('A1.3'),
-  useInviteLink: () => null,
-  useLeaveCircle: () => useStubMutation('A1.3'),
+  useMyCircles,
+  useCircle,
+  useCircleMembers,
+  useCreateCircle,
+  useJoinCircle,
+  useInviteLink,
+  useLeaveCircle,
 
   // Feed
   useFeed: (circleId) => useStubQuery(['feed', circleId], 'A2.1'),
@@ -58,7 +74,7 @@ export const api: ApiSurface = {
   useReact: () => useStubMutation('A2.2'),
 
   // Media
-  usePhotoPicker: () => rejectWith('A2.3'),
+  usePhotoPicker: () => pickImage,
   useCameraCapture: () => rejectWith('A2.3'),
   useVoiceRecorder: () => ({
     start: rejectWith('A2.4'),
@@ -67,7 +83,7 @@ export const api: ApiSurface = {
     durationMs: 0,
     uri: null,
   }),
-  useMediaUrl: (path) => useStubQuery(['media-url', path], 'A2.4'),
+  useMediaUrl,
 
   // Rhythm and closeness
   useSundayShare: (circleId) => useStubQuery(['sunday', circleId], 'A3.1'),
@@ -82,10 +98,10 @@ export const api: ApiSurface = {
   useMarkNudgeActed: () => useStubMutation('A4.6'),
   useHangoutIdeas: (circleId) => useStubQuery(['hangouts', circleId], 'A3.4'),
 
-  // Device (no-ops until A1.4 / A2.5)
-  useNotifications: () => ({ unread: [] }),
-  useNotificationRouting: () => {},
-  useInviteLinkHandler: () => {},
+  // Device
+  useNotifications,
+  useNotificationRouting: () => {}, // A2.5
+  useInviteLinkHandler: makeInviteLinkHandler(useSession),
 
   // Signals
   useSignalStatus: () => useStubQuery(['signal-status'], 'A4.1'),
