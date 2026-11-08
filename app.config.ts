@@ -10,9 +10,9 @@ import type { ExpoConfig } from 'expo/config';
 
 const BUNDLE_ID = 'com.cwanggang.sunnysideup';
 
-// HealthKit may not be allowed on a free Personal Team. S4 tries `true` once on
-// the build Mac; if Xcode rejects the capability, leave this `false`.
-const ENABLE_HEALTHKIT = false;
+// HealthKit: S4 confirmed it signs and installs on our free Personal Team (2026-11-08).
+// Turning it off again needs a reinstall on every phone.
+const ENABLE_HEALTHKIT = true;
 
 const config: ExpoConfig = {
   name: 'Sunny Side Up',
