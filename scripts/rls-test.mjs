@@ -66,7 +66,7 @@ try {
   // ---- profiles ----
   r = await maya.from('circle_profiles').select('*').eq('circle_id', SUNNY);
   check('circle_profiles shows 4 members', r.data?.length === 4, JSON.stringify(r.error ?? r.data?.length));
-  check('circle_profiles has only safe fields', r.data && Object.keys(r.data[0] ?? {}).sort().join() === 'avatar_path,birthday,circle_id,display_name,id,joined_at,role');
+  check('circle_profiles has only safe fields', r.data && Object.keys(r.data[0] ?? {}).sort().join() === 'avatar_path,birthday,circle_id,display_name,egg_style,facts,id,joined_at,role,username');
   r = await riley.from('circle_profiles').select('id').eq('circle_id', SUNNY);
   check("Riley can't see Sunny members' profiles", denied(r));
   r = await maya.from('profiles').select('id');
@@ -268,6 +268,107 @@ try {
   check('...and gets no notification for the next circle egg', denied(r));
   r = await sam.from('notifications').select('id').eq('target_id', egg2);
   check('Sam (setting on) still does', r.data?.length === 1);
+
+  // ---- design v0.4: profiles, coops, daily, events (+ guest), chat, photos ----
+  r = await maya.from('profiles').update({ username: 'sam' }).eq('id', ID.maya);
+  check("Maya can't take Sam's username", !!r.error);
+  r = await maya.rpc('username_available', { p_username: 'sam' });
+  check('username_available: taken -> false', r.data === false, JSON.stringify(r));
+  r = await maya.from('profiles').update({ facts: [{ k: 'comfort food', v: 'dumplings' }], egg_style: { swatch: 'mint', pattern: 'zigzag' } }).eq('id', ID.maya).select('facts');
+  check('Maya saves profile facts + egg', !r.error && r.data?.[0]?.facts?.length === 1, r.error?.message);
+  cleanup.push(() => maya.from('profiles').update({ facts: [], egg_style: { swatch: 'butter', pattern: 'dots' } }).eq('id', ID.maya));
+  r = await sam.from('circle_profiles').select('facts, username').eq('circle_id', SUNNY).eq('id', ID.maya).single();
+  check('Sam sees Maya\'s facts and username', r.data?.facts?.[0]?.v === 'dumplings' && !!r.data?.username, JSON.stringify(r.error ?? r.data));
+
+  r = await maya.rpc('create_circle', { name: 'test coop', description: 'just testing' });
+  check('New coop has an ABC123 code + description', /^[A-Z]{3}\d{3}$/.test(r.data?.invite_code ?? '') && r.data?.description === 'just testing', JSON.stringify(r.error ?? r.data));
+  if (r.data?.id) { const cid = r.data.id; cleanup.push(() => maya.rpc('leave_circle', { circle_id: cid })); }
+  r = await maya.rpc('coop_overview', {});
+  check('coop_overview lists Sunny with 4 members', r.data?.some((c) => c.id === SUNNY && c.members === 4), JSON.stringify(r.error ?? r.data?.length));
+  r = await maya.rpc('circle_daily', { p_circle_id: SUNNY });
+  check('circle_daily returns 7 days', r.data?.length === 7 && !!r.data[0].prompt, JSON.stringify(r.error ?? r.data?.length));
+  r = await riley.rpc('circle_daily', { p_circle_id: SUNNY });
+  check("Riley gets nothing from Sunny's daily", denied(r));
+
+  // Jordan is in Sunny and (for this test) Riley's coop, so Riley can be his event guest.
+  r = await jordan.rpc('join_circle', { invite_code: 'riley-tst' });
+  check('Jordan joins Riley\'s coop (for the guest test)', !r.error, r.error?.message);
+  cleanup.push(() => jordan.rpc('leave_circle', { circle_id: RILEYS }));
+  const startsAt = new Date(Date.now() + 2 * 86400_000).toISOString();
+  r = await jordan.rpc('create_event', {
+    p_circle_id: SUNNY, p_title: 'test dumpling night', p_starts_at: startsAt, p_location: "maya's place",
+    p_people: [{ user_id: ID.maya, role: 'view' }, { user_id: ID.riley, role: 'view' }],
+  });
+  check('Jordan creates an event with a guest', !r.error && !!r.data?.id, r.error?.message);
+  const evId = r.data?.id;
+  if (evId) {
+    cleanup.unshift(() => jordan.from('events').delete().eq('id', evId));
+    r = await riley.from('events').select('id').eq('id', evId);
+    check('Guest (Riley, not in Sunny) sees the event', r.data?.length === 1, JSON.stringify(r.error ?? r.data));
+    r = await riley.from('event_profiles').select('username').eq('event_id', evId);
+    check('Guest sees who is on the event', r.data?.length === 3, JSON.stringify(r.error ?? r.data));
+    r = await riley.from('interactions').select('id').eq('circle_id', SUNNY);
+    check("Guest still can't see the coop feed", denied(r));
+    r = await maya.from('notifications').select('body').eq('type', 'event').eq('target_id', evId);
+    check('Maya told "jordan added you to …"', r.data?.length === 1, JSON.stringify(r.error ?? r.data));
+    r = await sam.from('events').select('id').eq('id', evId);
+    check('Coop member not on the event still sees it', r.data?.length === 1);
+
+    r = await maya.rpc('create_event', { p_circle_id: SUNNY, p_title: 'x', p_starts_at: startsAt, p_people: [{ user_id: ID.riley }] });
+    const ev2 = r.data?.id;
+    if (ev2) cleanup.unshift(() => maya.from('events').delete().eq('id', ev2));
+    r = ev2 ? await riley.from('events').select('id').eq('id', ev2) : { data: [] };
+    check("Strangers can't be added (Maya shares no coop with Riley)", denied(r));
+
+    r = await maya.from('event_messages').insert({ event_id: evId, sender_id: ID.maya, body: 'yesss' });
+    check('Maya (on the event) chats', !r.error, r.error?.message);
+    r = await riley.from('event_messages').insert({ event_id: evId, sender_id: ID.riley, body: 'can i bring mochi?' });
+    check('Guest chats', !r.error, r.error?.message);
+    r = await sam.from('event_messages').insert({ event_id: evId, sender_id: ID.sam, body: 'hi' });
+    check("Sam (not on the event) can't chat", !!r.error);
+    r = await sam.from('event_messages').select('body').eq('event_id', evId);
+    check('…but coop members can read it', r.data?.length === 2);
+    r = await maya.from('notifications').select('body').eq('type', 'event').eq('target_id', evId).ilike('body', '%mochi%');
+    check('Maya notified of the chat message', r.data?.length === 1, JSON.stringify(r.data));
+
+    r = await maya.rpc('update_event', { p_event_id: evId, p_title: 'hacked' });
+    check("'view' person can't edit details", !!r.error);
+    r = await maya.rpc('set_event_chat_timer', { p_event_id: evId, p_days: 7 });
+    check("Non-lead can't change the chat timer", !!r.error);
+    r = await maya.rpc('set_event_opt_out', { p_event_id: evId, p_out: true });
+    r = await maya.from('event_messages').insert({ event_id: evId, sender_id: ID.maya, body: 'still here?' });
+    check('Opted out -> left the chat', !!r.error);
+
+    // event album: the guest adds a photo under events/{id}/
+    const gp = `events/${evId}/${crypto.randomUUID()}.jpg`;
+    r = await riley.storage.from('media').upload(gp, new Uint8Array([0xff, 0xd8, 0xff, 0xd9]), { contentType: 'image/jpeg' });
+    check('Guest uploads to the event album folder', !r.error, r.error?.message);
+    cleanup.push(() => riley.storage.from('media').remove([gp]));
+    r = await riley.from('photos').insert({ circle_id: SUNNY, event_id: evId, author_id: ID.riley, media_path: gp, width: 4, height: 3 }).select('id').single();
+    check('Guest adds an event photo', !r.error, r.error?.message);
+    if (r.data?.id) { const pid = r.data.id; cleanup.unshift(() => riley.from('photos').delete().eq('id', pid)); }
+    r = await priya.storage.from('media').download(gp);
+    check('Coop member can open the event photo', !r.error, r.error?.message);
+
+    // chat closes: lead moves the event 5 h into the past with a 0-day timer
+    r = await jordan.rpc('set_event_chat_timer', { p_event_id: evId, p_days: 0 });
+    check('Lead sets the chat timer', !r.error, r.error?.message);
+    r = await jordan.rpc('update_event', { p_event_id: evId, p_starts_at: new Date(Date.now() - 5 * 3600_000).toISOString() });
+    r = await riley.from('event_messages').insert({ event_id: evId, sender_id: ID.riley, body: 'late!' });
+    check('Closed chat rejects new messages', !!r.error);
+  }
+
+  // coop gallery
+  const galPath = `${SUNNY}/${crypto.randomUUID()}.jpg`;
+  r = await maya.storage.from('media').upload(galPath, new Uint8Array([0xff, 0xd8, 0xff, 0xd9]), { contentType: 'image/jpeg' });
+  cleanup.push(() => maya.storage.from('media').remove([galPath]));
+  r = await maya.from('photos').insert({ circle_id: SUNNY, author_id: ID.maya, media_path: galPath, width: 3, height: 4 }).select('id').single();
+  check('Maya adds a gallery photo', !r.error, r.error?.message);
+  if (r.data?.id) { const gid = r.data.id; cleanup.unshift(() => maya.from('photos').delete().eq('id', gid)); }
+  r = await riley.from('photos').select('id').eq('circle_id', SUNNY).is('event_id', null);
+  check("Riley can't see Sunny's gallery", denied(r));
+  r = await sam.storage.from('media').download(galPath);
+  check('Sam opens the gallery photo', !r.error, r.error?.message);
 
   // ---- RPCs ----
   r = await jordan.rpc('join_circle', { invite_code: 'riley-tst' });

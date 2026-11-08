@@ -132,6 +132,56 @@ export async function hangoutIdeas(input: {
   }
 }
 
+// ---------------------------------------------------------------- profile fact ideas
+// Design v0.4: playful "about me" categories. Input is ONLY the category names the person already
+// has (never their answers), so nothing personal reaches the model.
+
+const FACT_SYSTEM = `You suggest playful "about me" profile categories for a cozy app where close
+friends share one photo a day. Reply with 6 short lowercase category names, 2 to 4 words each,
+all different from the ones the person already has. Examples: celebrity crush, current go-to song,
+comfort food, hidden talent. Keep them light and friendly; nothing about health, money, politics,
+religion, relationships status, or anything sensitive.`;
+
+const FactSchema = z.object({ ideas: z.array(z.string()) });
+
+export const FACT_IDEAS_FALLBACK = [
+  'celebrity crush', 'current go-to song', 'comfort food', 'hidden talent', 'dream trip', 'go-to karaoke song',
+  'most used emoji', 'unpopular opinion', 'morning or night person', 'last show i binged', 'pet peeve',
+  'coffee order', 'first concert', 'favorite smell', 'childhood nickname', 'snack of choice',
+];
+
+function shuffled<T>(a: T[]): T[] {
+  const b = [...a];
+  for (let i = b.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [b[i], b[j]] = [b[j], b[i]];
+  }
+  return b;
+}
+
+/** 6 category ideas not already in `have`. `source` says whether Claude or the built-in list answered. */
+export async function factIdeas(have: string[]): Promise<{ ideas: string[]; source: 'claude' | 'list' }> {
+  const known = new Set(have.map((h) => h.toLowerCase().trim()));
+  const fallback = () => ({ ideas: shuffled(FACT_IDEAS_FALLBACK.filter((x) => !known.has(x))).slice(0, 6), source: 'list' as const });
+  try {
+    const res = await anthropic().messages.parse({
+      model: nudgeModel(),
+      max_tokens: 1000,
+      output_config: { effort: 'low', format: zodOutputFormat(FactSchema) },
+      system: FACT_SYSTEM,
+      messages: [{ role: 'user', content: `They already have: ${[...known].join(', ') || 'nothing yet'}` }],
+    });
+    if (res.stop_reason === 'refusal') return fallback();
+    const ideas = [...new Set((res.parsed_output?.ideas ?? [])
+      .map((x) => x.toLowerCase().trim().replace(/[."]/g, ''))
+      .filter((x) => x && x.length <= 32 && !known.has(x)))].slice(0, 6);
+    return ideas.length >= 3 ? { ideas, source: 'claude' } : fallback();
+  } catch (err) {
+    logLlmError('factIdeas', err);
+    return fallback();
+  }
+}
+
 // ---------------------------------------------------------------- errors
 
 function logLlmError(where: string, err: unknown) {

@@ -5,6 +5,8 @@
 //        tell today's person "it's your day" + today's prompt (setting: notify_daily_photo).
 //        Everyone else hears when the photo is posted (shares trigger, setting: notify_friend_posts).
 //        From 18:00 local on Sunday, one reminder to anyone who hasn't sent their egg yet.
+//   Events (design v0.4): from 09:00 local on the day, "dumpling night is today at 7pm" to everyone
+//        on the event who hasn't opted out.
 //        Quiet members are rotated in a little sooner (never visible anywhere).
 //   B3.3 Birthdays (day before + day of) and moments (morning of occurs_on), from 09:00 local.
 //        Day-of birthday and moment reminders are also stored as nudges for the Nudges tab.
@@ -147,6 +149,41 @@ Deno.serve(async (req) => {
   }
   const sent = new Set((eggsQ.data ?? []).map((e) => `${e.circle_id}:${e.period_key}:${e.author_id}`));
 
+  // events in the next ~2 days, and who's on them
+  const evQ = await db.from('events').select('id, circle_id, title, starts_at')
+    .gte('starts_at', new Date(now.getTime() - 86400_000).toISOString())
+    .lte('starts_at', new Date(now.getTime() + 2 * 86400_000).toISOString());
+  if (evQ.error) return json({ error: evQ.error.message }, 500);
+  const evIds = (evQ.data ?? []).map((e) => e.id as string);
+  const peopleQ = evIds.length
+    ? await db.from('event_people').select('event_id, user_id, opted_out').in('event_id', evIds)
+    : { data: [] as { event_id: string; user_id: string; opted_out: boolean }[], error: null };
+  if (peopleQ.error) return json({ error: peopleQ.error.message }, 500);
+  const timeIn = (iso: string, tz?: string) => {
+    try {
+      return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: tz || 'America/New_York' })
+        .format(new Date(iso)).toLowerCase().replace(':00', '').replace(' ', '');
+    } catch {
+      return '';
+    }
+  };
+  const eventCandidates: Candidate[] = [];
+  for (const ep of peopleQ.data ?? []) {
+    if (ep.opted_out || paused.has(ep.user_id)) continue;
+    const ev = (evQ.data ?? []).find((e) => e.id === ep.event_id);
+    if (!ev) continue;
+    const tz = profiles.get(ep.user_id)?.timezone;
+    const local = localTime(now, tz);
+    if (local.hour < FIRST_HOUR || local.hour >= LAST_HOUR) continue;
+    if (localTime(new Date(ev.starts_at as string), tz).date !== local.date) continue;
+    eventCandidates.push({
+      log: { kind: 'event_day', user_id: ep.user_id, circle_id: ev.circle_id as string, period_key: `${local.date}:${ev.id}` },
+      title: ev.title as string,
+      body: `${ev.title} is today at ${timeIn(ev.starts_at as string, tz)} 📅`,
+      data: { type: 'event', circle_id: ev.circle_id as string, target_id: ev.id as string },
+    });
+  }
+
   // today's prompt per local date (same for everyone that day)
   const prompts = new Map<string, string>();
   const promptFor = async (date: string) => {
@@ -158,7 +195,7 @@ Deno.serve(async (req) => {
   };
 
   // ---------- B3.1 / B3.2 / B3.3: per-recipient reminders ----------
-  const candidates: Candidate[] = [];
+  const candidates: Candidate[] = [...eventCandidates];
   for (const [circleId, members] of membersByCircle) {
     const cName = circleName.get(circleId) ?? 'your circle';
     for (const me of members) {

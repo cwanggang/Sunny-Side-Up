@@ -1,5 +1,5 @@
 // B2.3: remove a media file from Storage once nothing points at it any more.
-// Called by triggers when an interaction or share is deleted (including cascades from
+// Called by triggers when an interaction, share or photo is deleted (including cascades from
 // account/circle deletion) and when a share photo or avatar is replaced.
 import { adminClient } from '../_shared/supabase.ts';
 import { json, verifyWebhook, type WebhookPayload } from '../_shared/http.ts';
@@ -15,12 +15,14 @@ Deno.serve(async (req) => {
 
   const db = adminClient();
   // Safety: keep the file if any row still references it.
-  const [i, s, p] = await Promise.all([
+  const counts = await Promise.all([
     db.from('interactions').select('id', { count: 'exact', head: true }).eq('media_path', path),
     db.from('shares').select('id', { count: 'exact', head: true }).eq('media_path', path),
     db.from('profiles').select('id', { count: 'exact', head: true }).eq('avatar_path', path),
+    db.from('photos').select('id', { count: 'exact', head: true }).eq('media_path', path),
+    db.from('circles').select('id', { count: 'exact', head: true }).eq('cover_path', path),
   ]);
-  if ((i.count ?? 0) + (s.count ?? 0) + (p.count ?? 0) > 0) {
+  if (counts.reduce((n, c) => n + (c.count ?? 0), 0) > 0) {
     return json({ ok: true, skipped: 'still referenced' });
   }
 

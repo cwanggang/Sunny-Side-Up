@@ -39,6 +39,16 @@ export interface HangoutIdeasResponse {
   ideas: HangoutIdea[];
 }
 
+/** fact-ideas (design v0.4): "suggest categories" on the profile. Send only category names. */
+export interface FactIdeasRequest {
+  have: string[];
+}
+export interface FactIdeasResponse {
+  ideas: string[];
+  /** 'claude' when the model answered, 'list' when the built-in list was used. */
+  source: 'claude' | 'list';
+}
+
 /** delete-account: no body. Deletes the caller's rows, media, and auth user. */
 export interface DeleteAccountResponse {
   ok: true;
@@ -68,7 +78,7 @@ export interface DemoRunResponse {
 // subscribes to its own rows over Realtime, shows title/body as a local notification, routes on
 // type + circle_id + target_id when tapped, and sets read_at.
 
-export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
+export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment' | 'event';
 
 /** Notification settings (consents.notify_*). Rows tagged with a pref skip users who turned it off. */
 export type NotificationPref = 'daily_photo' | 'sunday' | 'friend_posts';
