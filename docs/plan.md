@@ -432,7 +432,7 @@ Tick only your own role's list (this keeps merges conflict-free). Commit the tic
 - [x] A1.1 · [x] A1.2 · [x] A1.3 · [x] A1.4 · [x] A1.5
 - [x] A2.1 · [x] A2.2 · [x] A2.3 · [x] A2.4 · [x] A2.5 · [x] A2.6
 - [x] A3.1 · [x] A3.2 · [x] A3.3 · [x] A3.4 · [x] A3.5
-- [ ] A4.1 · [ ] A4.2 · [ ] A4.3 · [ ] A4.4 · [ ] A4.5 · [ ] A4.6 · [ ] A4.7
+- [x] A4.1 · [x] A4.2 · [x] A4.3 · [x] A4.4 · [x] A4.5 · [x] A4.6 · [x] A4.7
 - [ ] A5.1 · [ ] A5.2 · [ ] A5.3
 
 &nbsp;

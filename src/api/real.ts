@@ -1,8 +1,5 @@
 // Real implementation of the @/api surface. Each area lives in its own file (auth.ts,
-// profile.ts, circles.ts, ...); hooks not built yet are stubs that fail with a clear
-// "not implemented yet (task ID)" error. Use EXPO_PUBLIC_USE_MOCKS=true for those screens.
-import { useMutation, useQuery } from '@tanstack/react-query';
-
+// profile.ts, circles.ts, feed.ts, rhythm.ts, signals.ts, ...); this file only assembles them.
 import { captureImage, pickImage, useNativeAudioPlayer, useNativeVoiceRecorder } from '@/native';
 
 import { signInWithEmail, signOut, signUpWithEmail, useSession } from './auth';
@@ -19,6 +16,8 @@ import { useFeed, useReact, useSendEgg, useSendPhoto, useSendText, useSendVoice 
 import { useHangoutIdeas, useReportAppOpen } from './hangouts';
 import { makeInviteLinkHandler } from './invite';
 import { useNotifications } from './notifications';
+import { useMarkNudgeActed, useMyNudges } from './nudges';
+import { useDeleteAccount, usePause, useWhatTheAppSaw } from './privacy';
 import { useConsent, useMyProfile, useUpdateConsent, useUpdateProfile } from './profile';
 import {
   useBirthdays,
@@ -29,27 +28,15 @@ import {
   useSundayShare,
 } from './rhythm';
 import { useNotificationRouting } from './routing';
+import {
+  requestSignalPermissions,
+  setHomeLocation,
+  uploadSignalsNow,
+  useSignalStatus,
+  useSignalSync,
+} from './signals';
 import { useMediaUrl } from './storage';
-import type { ApiSurface, Mutation, Query } from './surface';
-
-const notYet = (task: string) =>
-  new Error(`Not implemented yet (${task}). Set EXPO_PUBLIC_USE_MOCKS=true to use mock data.`);
-
-function useStubQuery<T>(key: readonly unknown[], task: string): Query<T> {
-  return useQuery<T, Error>({
-    queryKey: ['stub', ...key],
-    queryFn: () => Promise.reject(notYet(task)),
-    retry: false,
-  });
-}
-
-function useStubMutation<TVars, TResult = void>(task: string): Mutation<TVars, TResult> {
-  return useMutation<TResult, Error, TVars>({
-    mutationFn: () => Promise.reject(notYet(task)),
-  });
-}
-
-const rejectWith = (task: string) => () => Promise.reject(notYet(task));
+import type { ApiSurface } from './surface';
 
 export const api: ApiSurface = {
   // Auth (A1.1)
@@ -63,9 +50,9 @@ export const api: ApiSurface = {
   useUpdateProfile,
   useConsent,
   useUpdateConsent,
-  usePause: () => useStubMutation('A4.6'),
-  useWhatTheAppSaw: () => useStubQuery(['what-the-app-saw'], 'A4.6'),
-  useDeleteAccount: () => useStubMutation('A4.6'),
+  usePause,
+  useWhatTheAppSaw,
+  useDeleteAccount,
 
   // Circles (A1.3)
   useMyCircles,
@@ -100,8 +87,8 @@ export const api: ApiSurface = {
   useCreateMoment,
 
   // Nudges and hangouts
-  useMyNudges: () => useStubQuery(['nudges'], 'A4.6'),
-  useMarkNudgeActed: () => useStubMutation('A4.6'),
+  useMyNudges,
+  useMarkNudgeActed,
   useHangoutIdeas,
   useReportAppOpen,
 
@@ -111,7 +98,9 @@ export const api: ApiSurface = {
   useInviteLinkHandler: makeInviteLinkHandler(useSession),
 
   // Signals
-  useSignalStatus: () => useStubQuery(['signal-status'], 'A4.1'),
-  requestSignalPermissions: rejectWith('A4.1'),
-  setHomeLocation: rejectWith('A4.2'),
+  useSignalStatus,
+  requestSignalPermissions,
+  setHomeLocation,
+  uploadSignalsNow,
+  useSignalSync,
 };

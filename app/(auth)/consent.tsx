@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 
-import { HEALTHKIT_ENABLED, useConsent, useUpdateConsent, type Consent } from '@/api';
+import { HEALTHKIT_ENABLED, requestSignalPermissions, useConsent, useUpdateConsent, type Consent } from '@/api';
 import { Body, Button, Heading, Screen, ToggleRow } from '@/components';
 import { spacing } from '@/theme';
 
@@ -30,7 +30,11 @@ function ConsentForm({ initial }: { initial: Consent }) {
     update.mutate(
       { location, health: HEALTHKIT_ENABLED ? health : false, auto_nudges: autoNudges },
       {
-        onSuccess: () => {
+        onSuccess: async (saved) => {
+          // Ask iOS for exactly what was just allowed (location, then Health). A "Don't Allow" is fine.
+          if (saved.location || (saved.health && HEALTHKIT_ENABLED)) {
+            await requestSignalPermissions().catch((e) => console.warn('permission request failed', e));
+          }
           if (onboarding) router.replace('/profile-setup?onboarding=1');
           else router.back();
         },

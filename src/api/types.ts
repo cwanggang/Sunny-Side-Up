@@ -124,7 +124,10 @@ export interface CreateMomentInput {
 export interface Nudge {
   id: string;
   circleId: string;
+  circleName: string;
   aboutUserId: string;
+  /** The friend to reach out to (display name). */
+  aboutName: string;
   message: string;
   sentAt: string;
   actedAt: string | null;

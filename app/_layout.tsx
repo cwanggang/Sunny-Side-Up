@@ -9,6 +9,7 @@ import {
   useNotifications,
   useReportAppOpen,
   useSession,
+  useSignalSync,
 } from '@/api';
 
 // Keep the native splash up until the stored session has been restored (A1.1).
@@ -37,6 +38,8 @@ function RootStack() {
   useInviteLinkHandler();
   // A3.4: app_open on sign-in and each return to the foreground (throttled to 30 min).
   useReportAppOpen();
+  // A4.5: on-phone collection follows consent; yesterday's daily row is uploaded if due.
+  useSignalSync();
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync().catch(() => {});

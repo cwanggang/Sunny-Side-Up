@@ -110,4 +110,8 @@ export interface ApiSurface {
   useSignalStatus(): Query<SignalStatus>;
   requestSignalPermissions(): Promise<void>;
   setHomeLocation(): Promise<void>;
+  /** Testing aid: upload yesterday's row now. Resolves to a one-line summary. */
+  uploadSignalsNow(): Promise<string>;
+  /** Mount once in the root layout: keeps collection in step with consent and uploads the daily row. */
+  useSignalSync(): void;
 }

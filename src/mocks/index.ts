@@ -51,6 +51,9 @@ const consent: Consent = {
   notify_sunday: true,
   notify_friend_posts: true,
   paused_until: null,
+  notify_daily_photo: true,
+  notify_friend_posts: true,
+  notify_sunday: true,
   updated_at: daysAgo(20),
 };
 
@@ -88,7 +91,7 @@ const moments: Moment[] = [
 ];
 
 const nudges: Nudge[] = [
-  { id: 'n1', circleId: CIRCLE_ID, aboutUserId: 'u-ella', message: "Haven't caught up with Ella in a bit. Send her an egg?", sentAt: daysAgo(0.05), actedAt: null },
+  { id: 'n1', circleId: CIRCLE_ID, circleName: 'Sunny Crew', aboutUserId: 'u-ella', aboutName: 'Ella', message: "Haven't caught up with Ella in a bit. Send her an egg?", sentAt: daysAgo(0.05), actedAt: null },
 ];
 
 function useMockQuery<T>(key: readonly unknown[], data: T): Query<T> {
@@ -155,7 +158,7 @@ export const api: ApiSurface = {
   usePause: () => useMockMutation(),
   useWhatTheAppSaw: () =>
     useMockQuery(['what-the-app-saw'], [
-      { user_id: ME, day: dateIn(-1), hours_away_from_home: 6.5, places_visited: 4, sleep_hours: null, steps: null, uploaded_at: daysAgo(0.3) },
+      { user_id: ME, day: dateIn(-1), hours_away_from_home: 6.5, places_visited: 4, sleep_hours: 7.2, steps: 8400, uploaded_at: daysAgo(0.3) },
     ]),
   useDeleteAccount: () => useMockMutation(),
 
@@ -228,4 +231,6 @@ export const api: ApiSurface = {
     }),
   requestSignalPermissions: () => delay(undefined),
   setHomeLocation: () => delay(undefined),
+  uploadSignalsNow: () => delay('(mock) Sent yesterday: 6.5 h away, 4 places, 7.2 h sleep, 8400 steps'),
+  useSignalSync: () => {},
 };
