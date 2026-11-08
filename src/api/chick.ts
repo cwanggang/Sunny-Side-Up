@@ -167,6 +167,8 @@ export interface ChickEgg {
   mediaUri?: string | null;
   /** Marks this nudge as acted on. */
   nudgeId?: string | null;
+  /** The decoration from the decorate screen, so the friend gets the egg as it was decorated. */
+  eggStyle?: { swatch: string; pattern: string } | null;
 }
 
 /** Sends a just-because egg to one friend: a directed interaction, so only the two of you see it (P0.13). */
@@ -174,7 +176,7 @@ export function useSendChickEgg(): Mutation<ChickEgg> {
   const userId = useUserId();
   const queryClient = useQueryClient();
   return useMutation<void, Error, ChickEgg>({
-    mutationFn: async ({ circleId, recipientId, body, mediaUri, nudgeId }) => {
+    mutationFn: async ({ circleId, recipientId, body, mediaUri, nudgeId, eggStyle }) => {
       if (!userId) throw new Error('Not signed in');
       const supabase = getSupabase();
       const id = newId();
@@ -192,6 +194,7 @@ export function useSendChickEgg(): Mutation<ChickEgg> {
         kind: mediaUri ? (voice ? 'voice' : 'photo') : 'egg',
         body: body.trim() || null,
         media_path: path,
+        egg_style: eggStyle ? { swatch: eggStyle.swatch, pattern: eggStyle.pattern } : null,
       });
       if (res.error && path) await supabase.storage.from(MEDIA_BUCKET).remove([path]);
       check(res);

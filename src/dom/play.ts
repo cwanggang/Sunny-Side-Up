@@ -14,8 +14,27 @@ export interface PlayOptions {
   keep?: boolean;
 }
 
+const NOT_STYLES = new Set(['offset', 'easing', 'composite']);
+
+/**
+ * Writes the last keyframe onto the element's inline style, so the end state stays after the
+ * animation is cancelled. The prototype used `commitStyles()`, which can throw in the iOS web view
+ * (and sometimes in desktop browsers); the animation was then cancelled anyway and the element fell
+ * back to its CSS default. That made splash letters, the Sunday yolk and the reaction emojis vanish.
+ */
+function keepLastFrame(el: Element, kf: Keyframe[]) {
+  const last = kf[kf.length - 1];
+  if (!last) return;
+  const style = (el as HTMLElement).style as unknown as Record<string, string>;
+  for (const [k, v] of Object.entries(last)) {
+    if (NOT_STYLES.has(k) || v === null || v === undefined) continue;
+    style[k] = String(v);
+  }
+}
+
 export function play(el: Element | null | undefined, kf: Keyframe[], o: PlayOptions = {}): Promise<void> {
   if (!el) return Promise.resolve();
+  const keep = o.keep !== false;
   const a = el.animate(kf, {
     duration: T(o.duration ?? 400),
     delay: T(o.delay ?? 0),
@@ -25,14 +44,11 @@ export function play(el: Element | null | undefined, kf: Keyframe[], o: PlayOpti
   });
   return a.finished
     .then(() => {
-      if (o.keep !== false) {
-        try {
-          a.commitStyles();
-        } catch {
-          /* not rendered */
-        }
-      }
+      if (keep) keepLastFrame(el, kf);
       a.cancel();
     })
-    .catch(() => {});
+    .catch(() => {
+      // cancelled by someone else: still leave the element in its end state
+      if (keep) keepLastFrame(el, kf);
+    });
 }

@@ -74,9 +74,9 @@ const members: CircleMember[] = [
 const nameOf = (id: string) => members.find((m) => m.userId === id)?.displayName ?? 'Someone';
 
 const feed: FeedItem[] = [
-  { id: 'i1', circle_id: CIRCLE_ID, sender_id: 'u-ella', recipient_id: null, kind: 'egg', media_path: null, body: null, created_at: daysAgo(0.1), reactions: [] },
-  { id: 'i2', circle_id: CIRCLE_ID, sender_id: 'u-valerie', recipient_id: null, kind: 'text', media_path: null, body: 'Who is around Saturday?', created_at: daysAgo(0.5), reactions: [{ interaction_id: 'i2', user_id: ME, emoji: '🙋', created_at: daysAgo(0.4) }] },
-  { id: 'i3', circle_id: CIRCLE_ID, sender_id: 'u-johnathon', recipient_id: ME, kind: 'egg', media_path: null, body: null, created_at: daysAgo(1), reactions: [] },
+  { id: 'i1', circle_id: CIRCLE_ID, sender_id: 'u-ella', recipient_id: null, kind: 'egg', media_path: null, body: null, created_at: daysAgo(0.1), egg_style: null, reactions: [] },
+  { id: 'i2', circle_id: CIRCLE_ID, sender_id: 'u-valerie', recipient_id: null, kind: 'text', media_path: null, body: 'Who is around Saturday?', egg_style: null, created_at: daysAgo(0.5), reactions: [{ interaction_id: 'i2', user_id: ME, emoji: '🙋', created_at: daysAgo(0.4) }] },
+  { id: 'i3', circle_id: CIRCLE_ID, sender_id: 'u-johnathon', recipient_id: ME, kind: 'egg', media_path: null, body: null, egg_style: null, created_at: daysAgo(1), reactions: [] },
 ];
 
 const sundayPosts: Share[] = [

@@ -30,7 +30,9 @@ export function EventsScreen({ circleId }: { circleId: string | null }) {
         chat: e.chat_enabled,
         chatOpen: chatOpen(e),
         gallery: e.gallery_enabled,
-        out: e.people.some((p) => p.user_id === myId && p.opted_out),
+        // Not on the event at all counts as out: the button says "join" (the server adds you).
+        invited: e.people.some((p) => p.user_id === myId),
+        out: !e.people.some((p) => p.user_id === myId && !p.opted_out),
         going: e.people.filter((p) => !p.opted_out).length,
         unread: !!e.lastMessageBy && e.lastMessageBy !== myId,
       })),

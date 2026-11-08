@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useFriendEgg, useMediaUrl, useOpenChickEgg, usePeople, useReact } from '@/api';
+import { eggStyleOf, useFriendEgg, useMediaUrl, useOpenChickEgg, usePeople, useReact } from '@/api';
 import { afterReply } from '@/dom/defer';
 import RevealEgg from '@/dom/RevealEgg';
 import { colors } from '@/theme';
@@ -34,7 +34,8 @@ export default function FriendEggScreen() {
         groupName="a just-because egg"
         fromLine={`from ${fromName}, delivered by the chick`}
         dateLabel={dateLabel}
-        egg={{ ...from.egg, text: e.body }}
+        // The egg as the sender decorated it; older eggs (sent before egg_style existed) use their profile egg.
+        egg={{ ...(e.egg_style ? eggStyleOf(e) : from.egg), text: e.body }}
         message={{ kind: e.kind === 'voice' ? 'voice' : e.kind === 'photo' ? 'photo' : 'text', url: media.data ?? null, body: e.body }}
         top={insets.top}
         onReact={async (emoji) => react.mutate({ interactionId: e.id, emoji })}

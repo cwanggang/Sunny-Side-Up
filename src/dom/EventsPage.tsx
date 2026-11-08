@@ -21,6 +21,8 @@ export interface DomEvent {
   chatOpen: boolean;
   gallery: boolean;
   out: boolean;
+  /** On the event's people list (false: a coop event you were never added to; "join" adds you). */
+  invited: boolean;
   going: number;
   unread: boolean;
 }
@@ -71,9 +73,10 @@ export default function EventsPage(props: Props) {
 
   const evRow = (e: DomEvent) => {
     const start = new Date(e.startsAt);
-    const subLine = e.out ? 'you opted out' : coopId ? (e.location ?? '') : (coopNames[e.circleId] ?? '');
+    const subLine = e.out ? (e.invited ? 'you opted out' : 'not on your list yet') : coopId ? (e.location ?? '') : (coopNames[e.circleId] ?? '');
+    const optLabel = e.out ? (e.invited ? 'rejoin' : 'join') : 'opt out';
     return `<div class="ev-row${e.out ? ' out' : ''}" data-row="${e.id}">
-    <button class="ev-opt" data-opt="${e.id}" aria-label="${e.out ? 'rejoin' : 'opt out of'} ${esc(e.title)}">${optEgg(e.out)}<small>${e.out ? 'rejoin' : 'opt out'}</small></button>
+    <button class="ev-opt" data-opt="${e.id}" aria-label="${e.out ? optLabel : 'opt out of'} ${esc(e.title)}">${optEgg(e.out)}<small>${optLabel}</small></button>
     <button class="ev-main" data-open-ev="${e.id}"><b>${esc(e.title)}</b><small>${esc(subLine)}</small></button>
     <div class="ev-when"><span>${fmtShort(start)}</span><span>${fmtClock(start)}</span></div>
     ${e.chat ? `<button class="ev-chat${e.chatOpen ? '' : ' closed'}" data-chat="${e.id}" aria-label="open the chat for ${esc(e.title)}">${I.chat}${e.chatOpen && e.unread && !e.out ? '<i></i>' : ''}</button>` : '<span style="width:40px"></span>'}
@@ -109,7 +112,7 @@ export default function EventsPage(props: Props) {
     if (!evs.length) return `<div class="day-list"><p class="day-hint">nothing on ${label}</p></div>`;
     return `<div class="day-list">${evs
       .map((e) => {
-        const status = e.past ? 'this already happened' : e.out ? 'you opted out' : `${e.going} going`;
+        const status = e.past ? 'this already happened' : e.out ? (e.invited ? 'you opted out' : 'not on your list yet') : `${e.going} going`;
         return `<div class="day-card"><b>${esc(e.title)}</b><small>${label}, ${fmtClock(new Date(e.startsAt))}${coopId ? '' : `, ${esc(coopNames[e.circleId] ?? '')}`}</small><small>${status}</small>
       <div class="chips"><button class="chip" data-open-ev="${e.id}">details</button>
       ${e.chat ? `<button class="chip" data-chat="${e.id}">${e.chatOpen ? I.chat : I.lock}${e.chatOpen ? 'chat' : 'past chat'}</button>` : ''}
@@ -152,7 +155,7 @@ export default function EventsPage(props: Props) {
     if (opt) {
       const ev = p.events.find((x) => x.id === opt.dataset.opt);
       if (!ev) return;
-      toast(root.current!, ev.out ? `you're back in for ${ev.title}` : `you opted out of ${ev.title}`);
+      toast(root.current!, ev.out ? (ev.invited ? `you're back in for ${ev.title}` : `you joined ${ev.title}`) : `you opted out of ${ev.title}`);
       play(opt.querySelector('svg'), [{ transform: 'scale(1)' }, { transform: 'scale(1.18) rotate(-8deg)' }, { transform: 'scale(.95) rotate(4deg)' }, { transform: 'none' }], { duration: 420, keep: false });
       return call(p.onOpt, ev.id, !ev.out);
     }
