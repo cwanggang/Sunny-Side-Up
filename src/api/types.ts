@@ -13,7 +13,9 @@ export type { HangoutIdea, Session };
 export type Profile = Tables['profiles']['Row'];
 export type ProfileUpdate = Partial<Pick<Profile, 'display_name' | 'avatar_path' | 'birthday' | 'timezone'>>;
 export type Consent = Tables['consents']['Row'];
-export type ConsentUpdate = Partial<Pick<Consent, 'location' | 'health' | 'auto_nudges'>>;
+export type ConsentUpdate = Partial<
+  Pick<Consent, 'location' | 'health' | 'auto_nudges' | 'notify_daily_photo' | 'notify_sunday' | 'notify_friend_posts'>
+>;
 export type DailySignal = Tables['daily_signals']['Row'];
 
 // ---------- Circles ----------
@@ -122,7 +124,10 @@ export interface CreateMomentInput {
 export interface Nudge {
   id: string;
   circleId: string;
+  circleName: string;
   aboutUserId: string;
+  /** The friend to reach out to (display name). */
+  aboutName: string;
   message: string;
   sentAt: string;
   actedAt: string | null;

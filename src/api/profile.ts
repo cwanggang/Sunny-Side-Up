@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useUserId } from './auth';
 import { getSupabase } from './client';
 import { unwrap } from './errors';
+import { syncSignalsWithConsent } from './signals';
 import { avatarPath, mediaUrlKey, uploadFile } from './storage';
 import type { Mutation, Query } from './surface';
 import type { Consent, ConsentUpdate, Profile, ProfileUpdate } from './types';
@@ -65,6 +66,12 @@ export function useUpdateConsent(): Mutation<ConsentUpdate, Consent> {
       if (!userId) throw new Error('Not signed in');
       return unwrap(await getSupabase().from('consents').update(patch).eq('user_id', userId).select('*').single());
     },
-    onSuccess: (consent) => queryClient.setQueryData(consentKey(userId), consent),
+    onSuccess: (consent) => {
+      queryClient.setQueryData(consentKey(userId), consent);
+      // Start or stop on-phone collection to match (and forget location data if it was switched off).
+      void syncSignalsWithConsent(consent)
+        .catch((e) => console.warn('signal sync failed', e))
+        .finally(() => queryClient.invalidateQueries({ queryKey: ['signal-status'] }));
+    },
   });
 }

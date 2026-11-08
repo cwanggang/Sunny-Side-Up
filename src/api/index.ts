@@ -62,6 +62,8 @@ export const {
   useSignalStatus,
   requestSignalPermissions,
   setHomeLocation,
+  uploadSignalsNow,
+  useSignalSync,
 } = api;
 
 export { HEALTHKIT_ENABLED, USE_MOCKS } from './config';
