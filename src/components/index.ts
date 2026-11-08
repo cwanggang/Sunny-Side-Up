@@ -6,3 +6,4 @@ export { ToggleRow } from './ToggleRow';
 export { Body, Heading } from './Text';
 export { Chip } from './Chip';
 export { PhotoThumb, VoiceMemo } from './Media';
+export { ShareComposer, SharePost } from './Share';

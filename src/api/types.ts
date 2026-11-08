@@ -72,15 +72,21 @@ export interface VoicePlayer {
 export type ShareKind = Enums['share_kind'];
 export type Share = Tables['shares']['Row'];
 export interface SundayShare {
+  /** ISO week ending this coming (or current) Sunday, e.g. '2026-W45'. Posts during the week count toward it. */
   periodKey: string;
+  /** True on Sunday, when the server sends the "share your week" prompt. Posting is allowed any day. */
   isOpen: boolean;
+  /** This week's posts, oldest first. */
   posts: Share[];
+  previousPeriodKey: string;
+  /** Last week's posts (shown so the screen isn't empty early in the week). */
+  previousPosts: Share[];
 }
 export interface PostShareInput {
   circleId: string;
   kind: ShareKind;
   body?: string;
-  /** Local photo or voice file to upload with the post. */
+  /** Local photo (.jpg) or voice memo (.m4a) to upload with the post. */
   mediaUri?: string;
 }
 export interface SpotlightDay {
@@ -90,7 +96,10 @@ export interface SpotlightDay {
 }
 export interface Spotlight {
   today: SpotlightDay | null;
+  /** Today and the next 6 days that have someone scheduled. */
   week: SpotlightDay[];
+  /** Today's spotlight posts (kind 'spotlight', period_key = today), oldest first. */
+  posts: Share[];
 }
 export interface Birthday {
   userId: string;
@@ -98,6 +107,8 @@ export interface Birthday {
   birthday: string;
   /** Next occurrence (YYYY-MM-DD). */
   nextOn: string;
+  /** 0 = today. */
+  daysUntil: number;
 }
 export type Moment = Tables['moments']['Row'];
 export interface CreateMomentInput {

@@ -95,6 +95,8 @@ export interface ApiSurface {
 
   // Hangouts (A3.4)
   useHangoutIdeas(circleId: string): Query<HangoutIdea[]>;
+  /** Mount once in the root layout: logs app_open (at most every 30 min) for engagement counts. */
+  useReportAppOpen(): void;
 
   // Device (A1.4, A2.5)
   /** Call once after sign-in: realtime `notifications` rows → local notifications. */
