@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type } from '@/theme';
 
 interface ListItemProps {
   title: string;
@@ -30,13 +30,15 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+    ...shadow.card,
   },
   pressed: { opacity: 0.6 },
   text: { flex: 1, gap: spacing.xs },
-  title: { ...type.body, color: colors.text },
+  title: { ...type.heading, color: colors.text },
   subtitle: { ...type.caption, color: colors.textMuted },
   chevron: { ...type.title, color: colors.textMuted },
 });

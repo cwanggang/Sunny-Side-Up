@@ -10,7 +10,7 @@ import {
   type Share,
   type ShareKind,
 } from '@/api';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type } from '@/theme';
 
 import { Button } from './Button';
 import { PhotoThumb, VoiceMemo } from './Media';
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   composer: { gap: spacing.md },
   row: { flexDirection: 'row', gap: spacing.sm },
   third: { flex: 1 },
-  post: { gap: spacing.sm, padding: spacing.lg, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border },
+  post: { gap: spacing.sm, padding: spacing.lg, borderRadius: radii.lg, backgroundColor: colors.surface, ...shadow.card },
   meta: { ...type.caption, color: colors.textMuted },
   body: { ...type.body, color: colors.text },
 });

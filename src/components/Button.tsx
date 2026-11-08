@@ -42,14 +42,14 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading 
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.md,
+    paddingVertical: spacing.md + 2,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.pill,
     alignItems: 'center',
   },
   primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  secondary: { backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.text },
   disabled: { opacity: 0.5 },
   pressed: { opacity: 0.7 },
-  label: { ...type.body, fontWeight: '600' },
+  label: { ...type.body, fontWeight: '700' },
 });

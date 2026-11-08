@@ -81,7 +81,7 @@ export default function DemoScreen() {
         <Text style={[styles.body, blocked && styles.error]}>
           Demo key: {USE_MOCKS ? 'not needed in mock mode' : demoKeyConfigured ? 'set' : 'missing (add EXPO_PUBLIC_DEMO_KEY to .env.local)'}
         </Text>
-        <Text style={styles.hint}>Keep the app open on the nudge recipient's phone.</Text>
+        <Text style={styles.hint}>Keep the app open on the nudge recipient&apos;s phone.</Text>
       </View>
 
       <Text style={styles.section}>Main demo</Text>
@@ -99,7 +99,7 @@ export default function DemoScreen() {
         loading={running === 'Run drift + nudge'}
         disabled={busy || blocked}
       />
-      <Text style={styles.hint}>A friend gets a natural "reach out" notification. Reset before running it again.</Text>
+      <Text style={styles.hint}>A friend gets a natural &ldquo;reach out&rdquo; notification. Reset before running it again.</Text>
 
       <Text style={styles.section}>Rhythm (force the scheduler)</Text>
       {SCHEDULER_PRESETS.map((p) => (

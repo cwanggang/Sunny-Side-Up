@@ -69,5 +69,19 @@ export { rememberInviteCode } from './invite';
 export { isVoicePath } from './rhythm';
 // A4.7 demo controls (Developer B handoff); only app/(dev)/demo uses these.
 export { demoKeyConfigured, describeDemoAction, useDemoAction, type DemoAction } from './demo';
+// Design v0.3 (Developer B, Phase 5 handoff): daily photo, Sunday eggs, reactions on shares.
+export {
+  REACTION_EMOJI,
+  eggStyleOf,
+  useDailyPrompt,
+  usePostDailyPhoto,
+  useSendSundayEgg,
+  useShareReactions,
+  useSundayEgg,
+  useToggleShareReaction,
+  type EggStyle,
+  type ShareReaction,
+  type SundayEgg,
+} from './design';
 export { ApiProvider } from './provider';
 export type * from './types';

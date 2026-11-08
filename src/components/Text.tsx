@@ -8,6 +8,11 @@ export function Heading({ children }: { children: ReactNode }) {
   return <Text style={styles.heading}>{children}</Text>;
 }
 
+/** Small label above a section, like "up next" or "this week's prompt". */
+export function Label({ children }: { children: ReactNode }) {
+  return <Text style={styles.label}>{children}</Text>;
+}
+
 /** Plain paragraph text. `muted` for secondary text, `error` for failures. */
 export function Body({ children, muted, error }: { children: ReactNode; muted?: boolean; error?: boolean }) {
   return <Text style={[styles.body, muted && styles.muted, error && styles.error]}>{children}</Text>;
@@ -15,6 +20,7 @@ export function Body({ children, muted, error }: { children: ReactNode; muted?: 
 
 const styles = StyleSheet.create({
   heading: { ...type.title, color: colors.text, marginTop: spacing.md },
+  label: { ...type.label, color: colors.textSecondary },
   body: { ...type.body, color: colors.text },
   muted: { color: colors.textMuted },
   error: { color: colors.danger },
