@@ -17,7 +17,8 @@ commands run from the repo root.
    Placeholder photos are already uploaded, so you can skip this.
 4. **Load the real demo:** press **1. Reset demo** in the app's demo screen, or run
    `npx supabase db query --remote -f scripts/seed-demo.sql` (repo root).
-   `demo-status` should now show `next_step: ready` for all three.
+   `demo-status` should now show `next_step: tap "Run drift + nudge"…` for all three: that **is** the
+   ready state (it flips to `ready` once drift has run).
 5. Every demo phone: open the app, sign in, open the **Sunny Side Up Demo** circle once.
 
 ## The demo itself (about 2 minutes)
@@ -41,12 +42,29 @@ commands run from the repo root.
 | Jocelyn | Sunday: **Caden's egg is waiting** (gift), can't open it yet. Her person is Ella | Send her egg to Ella → Caden's egg opens for her |
 | Caden | Sunday: sent his egg to Jocelyn, **"still frying"** (waiting on Ella, who sends to him) | — |
 | Ella | Sunday: **uncracked** egg; her person is Caden | Crack → see who you're sending to |
+| Everyone | **Egg war vote** in the demo coop, started by Caden (about 20 h left, Caden is in) | Jocelyn opts in (2 of 3 = enough), Ella opts out → everyone voted, so the war goes **live at once**. Snipe someone; the target gets *"you got egged 🥚"*. The demo skip (`demo_skip_egg_war`) ends it and shows the winner |
 | Everyone | Events: **dumpling night** (Caden leads, chat with messages), **farmers market run** (Jocelyn leads, in 2 days), **movie marathon** (past, album + closed chat). Gallery with the demo photos. Coop page carton with three eggs | Open the event chat and send a message → the others get it as a notification |
 
 Sunday is a 3-person ring (Caden → Jocelyn → Ella → Caden), so everyone sends one egg and gets one.
 
 Talking points: drift and "cover" nudges are worded by the same prompt and look identical, so a
 nudge never reveals that someone went quiet. Only counts and timing are used, never message content.
+
+## Rehearsal log (M4, 2026-11-08, real cast)
+
+Run from SQL (`private.post_webhook('nudge-engine', '{"demo":"true"}')`, the same path as cron) right
+after Reset demo. Result: `1 nudge sent`, Jocelyn got one `nudge` notification about Ella, Ella got
+nothing, drift scores Ella 0.875 (quiet) vs 0.01-0.02. Informer alert fires for the demo coop
+(21.5% dip). What was flaky, and the fix:
+
+| Found | Fix |
+| --- | --- |
+| Nudge text said **"Send ella7.ha a quick photo…"**: Ella and Caden never set a display name (it was the email prefix), so the LLM wrote "Ella", failed the must-contain-the-name check, and every drift nudge used a canned fallback | Reset demo now sets first names (Ella, Jocelyn, Caden) when they were never set. Re-run gave *"Ella would love a silly voice memo from the Sunny Side Up crew today, go say hi! 🍳"* (real LLM wording) |
+| Informer chart was **empty right after Reset demo** (history only rebuilt by drift) | Reset demo rebuilds the 18-day engagement history (counts only; drift + nudges still wait for the button) |
+| Alert didn't fire: dip is ~21% with 3 people, line was 25% (tuned for 4) | Alert line is now 20% |
+| Second "Run drift + nudge" says **0 nudges sent** | Expected (48 h rule). Always **Reset demo** right before the real run |
+| The notification lands ~2-4 s after the tap (LLM wording) | Expected; wait a beat before looking at Jocelyn's phone |
+| `demo-status` says "tap Run drift + nudge" after a reset | That's the ready state (see step 4 above) |
 
 ## If something goes wrong
 
