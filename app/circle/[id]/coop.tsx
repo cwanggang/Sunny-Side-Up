@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect, useMemo } from 'react';
 import { Alert, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -27,6 +27,13 @@ export default function CoopScreen() {
   const peopleQ = useCoopPeople(id);
   const status = useEggWar(id);
   const leave = useLeaveCoop();
+
+  // The header is hidden here, but the title is what the next screen's back button says
+  // (feed, send something, sunny sunday, today's photo, hangouts...): the coop's name.
+  const navigation = useNavigation();
+  useEffect(() => {
+    if (coop?.name) navigation.setOptions({ title: coop.name.toLowerCase() });
+  }, [navigation, coop?.name]);
 
   const mine = peopleQ.data?.find((p) => p.id === myId);
   const avatar = useMediaUrl(mine?.avatarPath ?? null);

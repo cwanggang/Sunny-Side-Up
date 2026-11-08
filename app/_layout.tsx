@@ -88,7 +88,7 @@ function RootStack() {
           <Stack.Screen name="index" />
           <Stack.Screen
             name="(tabs)"
-            options={{ ...transitions.fade, headerShown: false }}
+            options={{ ...transitions.fade, headerShown: false, title: 'my coops' }}
           />
           <Stack.Screen name="(auth)/consent" />
           <Stack.Screen name="(auth)/profile-setup" />
@@ -100,25 +100,25 @@ function RootStack() {
         <Stack.Screen name="circle/[id]/decorate" options={{ headerShown: false }} />
         <Stack.Screen name="circle/[id]/reveal" options={{ ...transitions.fade, headerShown: false }} />
         {/* A5: egg war (design v0.5 "play!") */}
-        <Stack.Screen name="circle/[id]/play" options={{ headerShown: false }} />
-        <Stack.Screen name="circle/[id]/war" options={{ headerShown: false }} />
+        <Stack.Screen name="circle/[id]/play" options={{ headerShown: false, title: 'play' }} />
+        <Stack.Screen name="circle/[id]/war" options={{ headerShown: false, title: 'egg war' }} />
         <Stack.Screen name="circle/[id]/snipe" options={{ headerShown: false }} />
           <Stack.Screen name="circle/[id]/spotlight" />
           <Stack.Screen name="circle/[id]/birthdays" />
           <Stack.Screen name="circle/[id]/hangouts" />
           <Stack.Screen name="(dev)/demo" />
           {/* Design v0.4 screens (Developer B) */}
-          <Stack.Screen name="profile" options={{ headerShown: false }} />
-          <Stack.Screen name="calendar" options={{ headerShown: false }} />
-          <Stack.Screen name="coop/new" options={{ headerShown: false }} />
-          <Stack.Screen name="circle/[id]/coop" options={{ headerShown: false }} />
-          <Stack.Screen name="circle/[id]/events" options={{ headerShown: false }} />
-          <Stack.Screen name="circle/[id]/gallery" options={{ headerShown: false }} />
-          <Stack.Screen name="circle/[id]/daily" options={{ headerShown: false }} />
-          <Stack.Screen name="event/[eventId]" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ headerShown: false, title: 'profile' }} />
+          <Stack.Screen name="calendar" options={{ headerShown: false, title: 'calendar' }} />
+          <Stack.Screen name="coop/new" options={{ headerShown: false, title: 'new coop' }} />
+          <Stack.Screen name="circle/[id]/coop" options={{ headerShown: false, title: 'coop' }} />
+          <Stack.Screen name="circle/[id]/events" options={{ headerShown: false, title: 'events' }} />
+          <Stack.Screen name="circle/[id]/gallery" options={{ headerShown: false, title: 'gallery' }} />
+          <Stack.Screen name="circle/[id]/daily" options={{ headerShown: false, title: 'daily' }} />
+          <Stack.Screen name="event/[eventId]" options={{ headerShown: false, title: 'event' }} />
           <Stack.Screen name="event/new" options={{ ...transitions.rise, headerShown: false }} />
-          <Stack.Screen name="member/[userId]" options={{ ...transitions.fade, headerShown: false }} />
-          <Stack.Screen name="egg/[interactionId]" options={{ ...transitions.fade, headerShown: false }} />
+          <Stack.Screen name="member/[userId]" options={{ ...transitions.fade, headerShown: false, title: 'profile' }} />
+          <Stack.Screen name="egg/[interactionId]" options={{ ...transitions.fade, headerShown: false, title: 'egg' }} />
           {/* Design v0.5 (A5 handoff to Developer B) */}
           <Stack.Screen
             name="camera"
