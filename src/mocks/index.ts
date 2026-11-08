@@ -15,6 +15,7 @@ import type {
   Profile,
   ProfileUpdate,
   Share,
+  VoicePlayer,
   VoiceRecorder,
 } from '@/api/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -103,6 +104,17 @@ function useMockPatch<TVars extends object, T extends object>(key: string, curre
   });
 }
 
+function useMockVoicePlayer(url: string | null): VoicePlayer {
+  const [playing, setPlaying] = useState(false);
+  return {
+    ready: !!url,
+    playing,
+    durationSec: 4.2,
+    positionSec: 0,
+    toggle: async () => setPlaying((p) => !p),
+  };
+}
+
 function useMockVoiceRecorder(): VoiceRecorder {
   const [isRecording, setRecording] = useState(false);
   const [uri, setUri] = useState<string | null>(null);
@@ -110,6 +122,7 @@ function useMockVoiceRecorder(): VoiceRecorder {
     isRecording,
     uri,
     durationMs: isRecording ? 0 : uri ? 4200 : 0,
+    reset: () => setUri(null),
     start: async () => setRecording(true),
     stop: async () => {
       setRecording(false);
@@ -156,6 +169,7 @@ export const api: ApiSurface = {
   usePhotoPicker: () => () => delay('file:///mock/photo.jpg'),
   useCameraCapture: () => () => delay('file:///mock/camera.jpg'),
   useVoiceRecorder: useMockVoiceRecorder,
+  useVoicePlayer: useMockVoicePlayer,
   useMediaUrl: (path) => useMockQuery(['media-url', path], 'https://picsum.photos/400'),
 
   useSundayShare: (circleId) => useMockQuery(['sunday', circleId], { periodKey: '2026-W45', isOpen: true, posts: sundayPosts }),
