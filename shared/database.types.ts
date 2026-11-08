@@ -1383,6 +1383,28 @@ export type Database = {
         }
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
+      leave_egg_war: {
+        Args: { p_war_id: string }
+        Returns: {
+          circle_id: string
+          created_at: string
+          final_board: Json | null
+          id: string
+          live_ends_at: string | null
+          members: number
+          resolved_at: string | null
+          snipe_count: number
+          started_by: string | null
+          state: Database["public"]["Enums"]["egg_war_state"]
+          vote_ends_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "egg_wars"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       post_snipe: {
         Args: {
           p_caption?: string
