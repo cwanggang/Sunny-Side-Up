@@ -36,6 +36,9 @@ const profile: Profile = {
   avatar_path: null,
   birthday: '2004-03-14',
   timezone: 'America/New_York',
+  username: 'caden',
+  egg_style: { swatch: 'sky', pattern: 'dots' },
+  facts: [{ k: 'favorite color', v: 'sky blue' }],
   created_at: daysAgo(20),
 };
 
@@ -55,7 +58,9 @@ const circle: Circle = {
   id: CIRCLE_ID,
   name: 'Sunny Crew',
   home_area: 'Durham, NC',
-  invite_code: 'SUNNY1',
+  invite_code: 'SUN482',
+  description: 'the original crew',
+  cover_path: null,
   created_by: ME,
   created_at: daysAgo(20),
 };
