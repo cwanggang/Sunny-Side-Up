@@ -13,7 +13,7 @@ import { colors, radii, spacing, type } from '@/theme';
 
 // A4.7 (dev) demo controls, built by Developer B (plan §5 load-balancing handoff of app/(dev)/).
 // Demo order: 1 Reset demo -> 2 Run drift + nudge. Keep the app OPEN on the nudge recipient's
-// phone (Valerie): notifications are local and only show while the app is running (plan §3.0).
+// phone (Jocelyn): notifications are local and only show while the app is running (plan §3.0).
 
 interface LogEntry {
   at: string;

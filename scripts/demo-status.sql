@@ -3,9 +3,8 @@
 -- Circle-level facts (posts, photos, drift, today's daily photo, other sign-ups) repeat on every row.
 with cast_list(n, email, demo_role) as (
   values (1, 'ella7.ha@gmail.com', 'quiet member'),
-         (2, 'val311297@gmail.com', 'nudge recipient'),
-         (3, 'caden190wang@gmail.com', 'member'),
-         (4, 'gamecoder04@gmail.com', 'member')
+         (2, 'river.jossy7@gmail.com', 'nudge recipient'),
+         (3, 'caden190wang@gmail.com', 'member')
 ),
 c as (select '00000000-0000-4000-9000-0000000000d0'::uuid as id),
 today as (select (now() at time zone 'America/New_York')::date as d),
