@@ -135,8 +135,8 @@ try {
   check('Jordan got one for the circle egg', r.data?.length === 1);
   r = await maya.from('notifications').select('id').eq('target_id', eggId);
   check('Sender (Maya) got none for her own egg', denied(r));
-  r = await riley.from('notifications').select('id');
-  check("Riley can't read others' notifications", denied(r));
+  r = await riley.from('notifications').select('id, user_id');
+  check("Riley can't read others' notifications", !r.error && (r.data ?? []).every((x) => x.user_id === ID.riley), JSON.stringify(r.error));
   r = await jordan.from('notifications').update({ read_at: new Date().toISOString() }).eq('target_id', eggId).select('id');
   check('Jordan marks his notification read', r.data?.length === 1, JSON.stringify(r.error));
   r = await jordan.from('notifications').update({ body: 'edited' }).eq('target_id', eggId);
