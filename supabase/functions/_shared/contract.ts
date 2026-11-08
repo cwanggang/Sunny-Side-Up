@@ -5,7 +5,7 @@
 
 export const DEMO_KEY_HEADER = 'x-demo-key';
 
-export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment' | 'event';
+export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment' | 'event' | 'egg_war';
 
 /** Notification settings (consents.notify_*). Rows tagged with a pref skip users who turned it off. */
 export type NotificationPref = 'daily_photo' | 'sunday' | 'friend_posts';

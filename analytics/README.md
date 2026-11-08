@@ -68,10 +68,14 @@ Make a dataset/report from each view, then a dashboard:
 | --- | --- | --- |
 | **Engagement over time** (main pitch chart) | `circle_engagement_daily` | line chart, x = `day`, y = `activity_per_member`, one line per `circle_key` |
 | **Daily totals** | `daily_totals` | bars or line, x = `day`, y = `sent` and `opens` |
-| **Alert** | `circle_engagement_alerts` | table, filtered to `alert = true` ("a circle's engagement dropped ≥ 25%"); add an Informer alert/notification on it if your version supports that |
+| **Alert** | `circle_engagement_alerts` | table, filtered to `alert = true` ("a circle's engagement dropped ≥ 20%"); add an Informer alert/notification on it if your version supports that |
+| **Nudges** | `nudge_daily` | bars, x = `day`, y = `nudges_sent` and `nudges_acted` (all circles together) |
+| **Egg wars** | `egg_war_summary` | table or bar of `snipes` / `opted_in` per war |
 
 The demo circle shows a dip over the last 3 days (one friend went quiet), without saying who.
-Data is refreshed by the nightly drift job (08:00 UTC) and whenever the demo runs drift + nudge.
+Data is refreshed by the nightly drift job (08:00 UTC), by **Reset demo** (history is rebuilt at once) and whenever the demo runs drift + nudge.
+
+Status (2026-11-08): role `informer_ro` has login on and reads only these views (checked: no access to `public`). The demo coop shows the dip and `alert = true`. **Left to do by a person with an Informer login:** Parts 1, 4 and 5 (connect the datasource, build the dashboard, screenshots).
 Put screenshots for the pitch in `analytics/screenshots/`.
 
 ## Views reference (schema `analytics`)
@@ -80,7 +84,9 @@ Put screenshots for the pitch in `analytics/screenshots/`.
 | --- | --- | --- |
 | `circle_engagement_daily` | circle per day | `circle_key`, `day`, `members`, `sent`, `received`, `opens`, `activity_per_member` |
 | `daily_totals` | day | `day`, `circles`, `member_days`, `sent`, `opens`, `avg_activity_per_member` |
-| `circle_engagement_alerts` | circle | `circle_key`, `recent_avg` (last 3 days), `baseline_avg` (14 days before), `drop_pct`, `alert` (drop ≥ 25%) |
+| `circle_engagement_alerts` | circle | `circle_key`, `recent_avg` (last 3 days), `baseline_avg` (14 days before), `drop_pct`, `alert` (drop ≥ 20%) |
+| `nudge_daily` | day | `day`, `nudges_sent`, `nudges_acted`, `acted_pct`. All circles together and **no drift/cover split** (that never leaves the server, §9.4) |
+| `egg_war_summary` | egg war | `circle_key`, `started_on`, `state`, `members`, `opted_in`, `snipes` |
 | `daily_photo_participation` | circle per day | `circle_key`, `day`, `posted` (did that day's person post the daily photo) |
 | `sunday_exchange` | circle per Sunday | `circle_key`, `week`, `people` (paired), `eggs_sent`, `sent_pct` |
 

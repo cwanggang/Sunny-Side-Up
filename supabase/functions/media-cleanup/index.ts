@@ -1,6 +1,7 @@
 // B2.3: remove a media file from Storage once nothing points at it any more.
 // Called by triggers when an interaction, share or photo is deleted (including cascades from
-// account/circle deletion) and when a share photo or avatar is replaced.
+// account/circle deletion), when an egg war snipe is deleted or its war ends, and when a share
+// photo or avatar is replaced.
 import { adminClient } from '../_shared/supabase.ts';
 import { json, verifyWebhook, type WebhookPayload } from '../_shared/http.ts';
 import { MEDIA_BUCKET } from '../_shared/contract.ts';
@@ -21,6 +22,7 @@ Deno.serve(async (req) => {
     db.from('profiles').select('id', { count: 'exact', head: true }).eq('avatar_path', path),
     db.from('photos').select('id', { count: 'exact', head: true }).eq('media_path', path),
     db.from('circles').select('id', { count: 'exact', head: true }).eq('cover_path', path),
+    db.from('egg_war_snipes').select('id', { count: 'exact', head: true }).eq('media_path', path),
   ]);
   if (counts.reduce((n, c) => n + (c.count ?? 0), 0) > 0) {
     return json({ ok: true, skipped: 'still referenced' });

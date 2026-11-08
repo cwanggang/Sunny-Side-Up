@@ -381,6 +381,39 @@ try {
   check('Bad invite code errors', !!r.error);
   r = await maya.rpc('is_member_of', { p_circle_id: RILEYS, p_user_id: ID.riley });
   check('Helper functions not exposed over the API', !!r.error);
+
+  // ---- egg wars (v0.5 play!) — stays in the vote stage; the live stage is tested in SQL ----
+  r = await maya.rpc('start_egg_war', { p_circle_id: SUNNY });
+  check('Maya starts an egg war vote', r.data?.state === 'vote', JSON.stringify(r.error));
+  const war = r.data;
+  if (war) cleanup.push(() => maya.rpc('cancel_egg_war', { p_war_id: war.id }));
+  r = await sam.rpc('start_egg_war', { p_circle_id: SUNNY });
+  check('Only one egg war per coop', !!r.error);
+  r = await riley.from('egg_wars').select('id').eq('circle_id', SUNNY);
+  check("Riley can't see Sunny's egg war", denied(r));
+  r = await riley.rpc('egg_war_status', { p_circle_id: SUNNY });
+  check("Riley can't read Sunny's egg war status", !!r.error);
+  r = await riley.rpc('vote_egg_war', { p_war_id: war?.id, p_choice: 'in' });
+  check("Riley can't vote in Sunny's egg war", !!r.error);
+  r = await sam.rpc('vote_egg_war', { p_war_id: war?.id, p_choice: 'in' });
+  check('Sam opts in (still voting, not everyone has voted)', r.data?.state === 'vote', JSON.stringify(r.error));
+  r = await sam.from('egg_war_people').select('user_id, choice').eq('war_id', war?.id);
+  check('Members see who opted in', r.data?.length === 2, JSON.stringify(r.error ?? r.data));
+  r = await sam.from('egg_war_people').insert({ war_id: war?.id, user_id: ID.jordan, choice: 'in' });
+  check("Sam can't vote for Jordan directly", !!r.error);
+  r = await sam.rpc('post_snipe', { p_war_id: war?.id, p_target_id: ID.maya, p_media_path: `${SUNNY}/rls-snipe.jpg` });
+  check("Can't snipe before the war is live", !!r.error);
+  r = await sam.from('egg_war_snipes').insert({ war_id: war?.id, circle_id: SUNNY, sniper_id: ID.sam, target_id: ID.maya, media_path: `${SUNNY}/x.jpg` });
+  check("Snipes can't be inserted directly", !!r.error);
+  r = await maya.rpc('demo_skip_egg_war', { p_war_id: war?.id });
+  check('Demo skip only works in the demo coop', !!r.error);
+  r = await sam.rpc('cancel_egg_war', { p_war_id: war?.id });
+  check("Only the starter can call it off", !!r.error);
+  r = await maya.rpc('egg_war_status', { p_circle_id: SUNNY });
+  check('egg_war_status: need 3 of 4, vote open', r.data?.need === 3 && r.data?.war?.state === 'vote', JSON.stringify(r.error ?? r.data));
+  r = await maya.rpc('cancel_egg_war', { p_war_id: war?.id });
+  check('Starter calls it off during the vote', r.data?.state === 'off', JSON.stringify(r.error));
+  cleanup.pop();
 } finally {
   for (const fn of cleanup) await fn();
 }
