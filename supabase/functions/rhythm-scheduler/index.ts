@@ -1,6 +1,9 @@
 // B3.1–B3.3: hourly rhythm scheduler (pg_cron -> pg_net -> here).
-//   B3.1 Sunday share: on Sunday from 10:00 local, notify "share your week" once per user/circle/week.
-//   B3.2 Spotlight: keep spotlight_days filled 7 days ahead; from 09:00 local, notify today's person.
+//   B3.1 Sunny Sunday (design v0.3): on Sunday, make this week's secret pairs (sunday_pairs); from
+//        10:00 local, notify "crack your egg" once per user/circle/week (setting: notify_sunday).
+//   B3.2 Spotlight = the daily photo: keep spotlight_days filled 7 days ahead; from 09:00 local,
+//        tell today's person "it's your day" + today's prompt (setting: notify_daily_photo).
+//        Everyone else hears when the photo is posted (shares trigger, setting: notify_friend_posts).
 //        Quiet members are rotated in a little sooner (never visible anywhere).
 //   B3.3 Birthdays (day before + day of) and moments (morning of occurs_on), from 09:00 local.
 //        Day-of birthday and moment reminders are also stored as nudges for the Nudges tab.
@@ -15,7 +18,7 @@ import { adminClient } from '../_shared/supabase.ts';
 import { notify } from '../_shared/notify.ts';
 import { authorizeJob, json } from '../_shared/http.ts';
 import { addDays, isBirthdayOn, localTime } from '../_shared/time.ts';
-import type { DemoRunResponse, NotificationType } from '../_shared/contract.ts';
+import type { DemoRunResponse, NotificationPref, NotificationType } from '../_shared/contract.ts';
 
 const FIRST_HOUR = 9;
 const SUNDAY_HOUR = 10;
@@ -29,6 +32,7 @@ interface Candidate {
   title: string;
   body: string;
   data: { type: NotificationType; circle_id: string; target_id?: string };
+  pref?: NotificationPref;
   nudge?: { about_user_id: string; reason_kind: 'birthday' | 'moment' };
 }
 
@@ -115,6 +119,26 @@ Deno.serve(async (req) => {
     if (error) return json({ error: error.message }, 500);
   }
 
+  // ---------- B3.1: this week's Sunday pairs (circle's reference time zone) ----------
+  let sundayPairs = 0;
+  for (const [circleId, members] of membersByCircle) {
+    const local = localTime(now, profiles.get(members[0].user_id)?.timezone);
+    if (local.weekday !== 0) continue;
+    const { data, error } = await db.rpc('ensure_sunday_pairs', { p_circle_id: circleId, p_period_key: local.isoWeek });
+    if (error) return json({ error: `ensure_sunday_pairs: ${error.message}` }, 500);
+    sundayPairs += (data as number) ?? 0;
+  }
+
+  // today's prompt per local date (same for everyone that day)
+  const prompts = new Map<string, string>();
+  const promptFor = async (date: string) => {
+    if (!prompts.has(date)) {
+      const { data, error } = await db.rpc('daily_prompt', { p_day: date });
+      prompts.set(date, error || !data ? 'show us your day' : (data as string));
+    }
+    return prompts.get(date)!;
+  };
+
   // ---------- B3.1 / B3.2 / B3.3: per-recipient reminders ----------
   const candidates: Candidate[] = [];
   for (const [circleId, members] of membersByCircle) {
@@ -126,26 +150,25 @@ Deno.serve(async (req) => {
       if (local.hour < FIRST_HOUR || local.hour >= LAST_HOUR) continue;
       const base = { user_id: me.user_id, circle_id: circleId };
 
-      // Sunday share
+      // Sunny Sunday
       if (local.weekday === 0 && local.hour >= SUNDAY_HOUR) {
         candidates.push({
           log: { ...base, kind: 'sunday', period_key: local.isoWeek },
           title: cName,
-          body: 'Sunday share is open ☀️ How was your week?',
+          body: "sunny sunday! ☀️ crack your egg to see who you're sending to",
           data: { type: 'share_open', circle_id: circleId, target_id: local.isoWeek },
+          pref: 'sunday',
         });
       }
 
-      // Spotlight
-      const star = spotlight.get(`${circleId}:${local.date}`);
-      if (star && !paused.has(star)) {
+      // Daily photo: only today's person is told (the others hear when it's posted)
+      if (spotlight.get(`${circleId}:${local.date}`) === me.user_id) {
         candidates.push({
           log: { ...base, kind: 'spotlight', period_key: local.date },
           title: cName,
-          body: star === me.user_id
-            ? "Today's your spotlight day ☀️"
-            : `Today's spotlight: ${firstName(profiles.get(star))} ☀️`,
-          data: { type: 'spotlight', circle_id: circleId, target_id: star },
+          body: `it's your day! 🍳 today's prompt: ${await promptFor(local.date)}`,
+          data: { type: 'spotlight', circle_id: circleId, target_id: me.user_id },
+          pref: 'daily_photo',
         });
       }
 
@@ -230,6 +253,7 @@ Deno.serve(async (req) => {
       target_id: c.data.target_id ?? null,
       title: c.title,
       body: c.body,
+      pref: c.pref,
     })));
   } catch (err) {
     return json({ error: String(err) }, 500);
@@ -242,7 +266,8 @@ Deno.serve(async (req) => {
   const response: DemoRunResponse & Record<string, unknown> = {
     ok: true,
     summary: `${toSend.length} reminders (${Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(', ') || 'none due'}), ` +
-      `${notified} notifications created, ${newSpotlights.length} spotlight days scheduled`,
+      `${notified} notifications created, ${newSpotlights.length} spotlight days scheduled` +
+      (sundayPairs ? `, ${sundayPairs} people paired for Sunday` : ''),
     now: now.toISOString(),
     reminders: counts,
     notified,
