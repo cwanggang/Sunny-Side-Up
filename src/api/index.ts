@@ -40,6 +40,7 @@ export const {
   usePhotoPicker,
   useCameraCapture,
   useVoiceRecorder,
+  useVoicePlayer,
   useMediaUrl,
   // Rhythm and closeness
   useSundayShare,

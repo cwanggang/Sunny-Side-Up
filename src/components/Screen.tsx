@@ -1,6 +1,6 @@
 import { useNavigation } from 'expo-router';
 import { useLayoutEffect, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { colors, spacing, type } from '@/theme';
 
@@ -9,11 +9,14 @@ interface ScreenProps {
   title?: string;
   /** Short placeholder line, e.g. which task builds this screen. */
   note?: string;
+  /** Pull to refresh: pass both. */
+  refreshing?: boolean;
+  onRefresh?: () => void;
   children?: ReactNode;
 }
 
 /** Plain scrollable page used by every screen. */
-export function Screen({ title, note, children }: ScreenProps) {
+export function Screen({ title, note, refreshing, onRefresh, children }: ScreenProps) {
   const navigation = useNavigation();
   useLayoutEffect(() => {
     if (title) navigation.setOptions({ title });
@@ -26,6 +29,7 @@ export function Screen({ title, note, children }: ScreenProps) {
       // iOS headers and tab bars are translucent and overlap the scroll view; this insets content below/above them.
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
+      refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined}
     >
       {note ? <Text style={styles.note}>{note}</Text> : null}
       {children}

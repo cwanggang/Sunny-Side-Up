@@ -48,12 +48,24 @@ export interface SendTarget {
 
 // ---------- Media ----------
 export interface VoiceRecorder {
+  /** Asks for the microphone if needed, then records (stops by itself at 60 seconds). */
   start(): Promise<void>;
   /** Stops and returns the local file URI (m4a), or null if nothing was recorded. */
   stop(): Promise<string | null>;
+  /** Forget the finished recording (after sending or discarding it). */
+  reset(): void;
   isRecording: boolean;
+  /** Live while recording; the finished recording's length afterwards. */
   durationMs: number;
+  /** The finished recording, or null. */
   uri: string | null;
+}
+export interface VoicePlayer {
+  ready: boolean;
+  playing: boolean;
+  durationSec: number;
+  positionSec: number;
+  toggle(): Promise<void>;
 }
 
 // ---------- Rhythm & closeness ----------

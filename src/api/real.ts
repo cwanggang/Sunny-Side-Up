@@ -3,7 +3,7 @@
 // "not implemented yet (task ID)" error. Use EXPO_PUBLIC_USE_MOCKS=true for those screens.
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { pickImage } from '@/native';
+import { captureImage, pickImage, useNativeAudioPlayer, useNativeVoiceRecorder } from '@/native';
 
 import { signInWithEmail, signOut, signUpWithEmail, useSession } from './auth';
 import {
@@ -15,9 +15,11 @@ import {
   useLeaveCircle,
   useMyCircles,
 } from './circles';
+import { useFeed, useReact, useSendEgg, useSendPhoto, useSendText, useSendVoice } from './feed';
 import { makeInviteLinkHandler } from './invite';
 import { useNotifications } from './notifications';
 import { useConsent, useMyProfile, useUpdateConsent, useUpdateProfile } from './profile';
+import { useNotificationRouting } from './routing';
 import { useMediaUrl } from './storage';
 import type { ApiSurface, Mutation, Query } from './surface';
 
@@ -65,24 +67,19 @@ export const api: ApiSurface = {
   useInviteLink,
   useLeaveCircle,
 
-  // Feed
-  useFeed: (circleId) => useStubQuery(['feed', circleId], 'A2.1'),
-  useSendEgg: () => useStubMutation('A2.2'),
-  useSendText: () => useStubMutation('A2.2'),
-  useSendPhoto: () => useStubMutation('A2.3'),
-  useSendVoice: () => useStubMutation('A2.4'),
-  useReact: () => useStubMutation('A2.2'),
+  // Feed (A2.1–A2.4)
+  useFeed,
+  useSendEgg,
+  useSendText,
+  useSendPhoto,
+  useSendVoice,
+  useReact,
 
-  // Media
+  // Media (A2.3–A2.4)
   usePhotoPicker: () => pickImage,
-  useCameraCapture: () => rejectWith('A2.3'),
-  useVoiceRecorder: () => ({
-    start: rejectWith('A2.4'),
-    stop: rejectWith('A2.4'),
-    isRecording: false,
-    durationMs: 0,
-    uri: null,
-  }),
+  useCameraCapture: () => captureImage,
+  useVoiceRecorder: useNativeVoiceRecorder,
+  useVoicePlayer: useNativeAudioPlayer,
   useMediaUrl,
 
   // Rhythm and closeness
@@ -100,7 +97,7 @@ export const api: ApiSurface = {
 
   // Device
   useNotifications,
-  useNotificationRouting: () => {}, // A2.5
+  useNotificationRouting,
   useInviteLinkHandler: makeInviteLinkHandler(useSession),
 
   // Signals

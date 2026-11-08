@@ -37,3 +37,23 @@ export async function showLocalNotification(input: {
     trigger: null,
   });
 }
+
+/**
+ * Calls `handler` with a notification's `data` when the user taps it, including the tap that
+ * launched the app from a cold start. Returns an unsubscribe function.
+ */
+export function subscribeToNotificationTaps(handler: (data: Record<string, unknown>, id: string) => void): () => void {
+  const handle = (response: Notifications.NotificationResponse | null) => {
+    if (!response || response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
+    const { identifier, content } = response.notification.request;
+    handler((content.data ?? {}) as Record<string, unknown>, identifier);
+  };
+  const sub = Notifications.addNotificationResponseReceivedListener(handle);
+  Notifications.getLastNotificationResponseAsync()
+    .then((response) => {
+      handle(response);
+      if (response) return Notifications.clearLastNotificationResponseAsync();
+    })
+    .catch(() => {});
+  return () => sub.remove();
+}

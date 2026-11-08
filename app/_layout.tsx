@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 
-import { ApiProvider, useInviteLinkHandler, useNotifications, useSession } from '@/api';
+import { ApiProvider, useInviteLinkHandler, useNotificationRouting, useNotifications, useSession } from '@/api';
 
 // Keep the native splash up until the stored session has been restored (A1.1).
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -24,6 +24,8 @@ function RootStack() {
 
   // A1.4: own `notifications` rows → local notifications (no-op while signed out).
   useNotifications();
+  // A2.5: tapping a notification opens the matching screen.
+  useNotificationRouting();
   // A1.4: resumes an invite link that was opened while signed out.
   useInviteLinkHandler();
 

@@ -16,7 +16,7 @@ const MAX_KEPT = 50;
 export function useNotifications(): { unread: AppNotification[] } {
   const userId = useUserId();
   // Delivered during this app run, newest first, tagged with whose they are so a sign-out
-  // or account switch never shows the previous user's list. (A2.5 removes items when opened.)
+  // or account switch never shows the previous user's list. Nothing reads this list yet; tapped banners route via A2.5.
   const [delivered, setDelivered] = useState<{ userId: string | null; items: AppNotification[] }>({
     userId: null,
     items: [],

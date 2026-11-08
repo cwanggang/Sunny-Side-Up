@@ -26,6 +26,7 @@ import type {
   SignalStatus,
   Spotlight,
   SundayShare,
+  VoicePlayer,
   VoiceRecorder,
 } from './types';
 
@@ -72,8 +73,10 @@ export interface ApiSurface {
 
   // Media (A2.3–A2.4). Pickers resolve to a local URI, or null if cancelled.
   usePhotoPicker(): (options?: { square?: boolean }) => Promise<string | null>;
-  useCameraCapture(): () => Promise<string | null>;
+  useCameraCapture(): (options?: { square?: boolean }) => Promise<string | null>;
   useVoiceRecorder(): VoiceRecorder;
+  /** Play/pause a voice memo from a URL (signed media URL or a local recording). */
+  useVoicePlayer(url: string | null): VoicePlayer;
   useMediaUrl(path: string | null): Query<string>;
 
   // Rhythm (A3.1–A3.2)
