@@ -5,6 +5,7 @@
   "description": "Developer B scripts: RLS tests, demo triggers. Separate from the app's package.json.",
   "scripts": {
     "rls-test": "node --env-file=.env rls-test.mjs",
+    "rls-test:setup": "cd .. && npx supabase db query --remote -f scripts/rls-test-setup.sql",
     "seed-media": "node --env-file=.env seed-media.mjs",
     "notify-test": "node notify-test.mjs",
     "upload-demo-photos": "node --env-file=.env upload-demo-photos.mjs",
