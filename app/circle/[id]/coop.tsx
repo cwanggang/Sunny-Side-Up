@@ -1,10 +1,10 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useCoop, useCoopPeople, useLeaveCoop, useSession } from '@/api';
 import { Body, Button, Screen } from '@/components';
 import { Carton } from '@/components/Coop';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type } from '@/theme';
 
 // Design v0.4 coop dashboard (Developer B): the egg carton (tap an egg to crack a friend's
 // profile; tap the lid for the code), the description, and the coop's pages.
@@ -16,15 +16,16 @@ export default function CoopScreen() {
   const people = useCoopPeople(id);
   const leave = useLeaveCoop();
 
-  const nav: { label: string; to: string }[] = [
-    { label: 'events', to: `/circle/${id}/events` },
-    { label: 'gallery', to: `/circle/${id}/gallery` },
-    { label: 'daily', to: `/circle/${id}/daily` },
-    { label: "today's photo", to: `/circle/${id}/spotlight` },
-    { label: 'sunny sunday', to: `/circle/${id}/sunday` },
-    { label: 'birthdays', to: `/circle/${id}/birthdays` },
-    { label: 'hangout ideas', to: `/circle/${id}/hangouts` },
-    { label: 'feed', to: `/circle/${id}/feed` },
+  const nav: { icon: string; label: string; to: string }[] = [
+    { icon: '📸', label: "today's photo", to: `/circle/${id}/spotlight` },
+    { icon: '💬', label: 'feed', to: `/circle/${id}/feed` },
+    { icon: '🥚', label: 'send something', to: `/circle/${id}/compose` },
+    { icon: '☀️', label: 'sunny sunday', to: `/circle/${id}/sunday` },
+    { icon: '📅', label: 'events', to: `/circle/${id}/events` },
+    { icon: '🖼️', label: 'gallery', to: `/circle/${id}/gallery` },
+    { icon: '🔥', label: 'daily', to: `/circle/${id}/daily` },
+    { icon: '🎂', label: 'birthdays', to: `/circle/${id}/birthdays` },
+    { icon: '✨', label: 'hangout ideas', to: `/circle/${id}/hangouts` },
   ];
 
   return (
@@ -45,15 +46,16 @@ export default function CoopScreen() {
 
       <View style={styles.nav}>
         {nav.map((n) => (
-          <View key={n.label} style={styles.navItem}>
-            <Button variant="secondary" label={n.label} onPress={() => router.push(n.to as never)} />
-          </View>
+          <Pressable
+            key={n.label}
+            accessibilityRole="button"
+            onPress={() => router.push(n.to as never)}
+            style={({ pressed }) => [styles.tile, pressed && { transform: [{ scale: 0.96 }] }]}
+          >
+            <Text style={styles.tileIcon}>{n.icon}</Text>
+            <Text style={styles.tileText}>{n.label}</Text>
+          </Pressable>
         ))}
-        <View style={styles.navItem}>
-          <View style={styles.soon}>
-            <Text style={styles.soonText}>play! · coming soon</Text>
-          </View>
-        </View>
       </View>
 
       <Button
@@ -63,7 +65,7 @@ export default function CoopScreen() {
         onPress={() =>
           Alert.alert('leave this coop?', "you can come back with the code.", [
             { text: 'cancel', style: 'cancel' },
-            { text: 'leave', style: 'destructive', onPress: () => leave.mutate({ circleId: id }, { onSuccess: () => router.back() }) },
+            { text: 'leave', style: 'destructive', onPress: () => leave.mutate({ circleId: id }, { onSuccess: () => router.replace('/circles') }) },
           ])
         }
       />
@@ -74,8 +76,8 @@ export default function CoopScreen() {
 const styles = StyleSheet.create({
   kicker: { ...type.caption, color: colors.textSecondary, textAlign: 'center' },
   desc: { ...type.body, color: colors.textSecondary, textAlign: 'center' },
-  nav: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  navItem: { width: '48%' },
-  soon: { paddingVertical: spacing.md + 2, borderRadius: radii.pill, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.border, alignItems: 'center' },
-  soonText: { ...type.body, fontWeight: '600', color: colors.textMuted },
+  nav: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, justifyContent: 'space-between' },
+  tile: { width: '31.5%', aspectRatio: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.xs, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  tileIcon: { fontSize: 28 },
+  tileText: { ...type.caption, fontWeight: '700', color: colors.text, textAlign: 'center' },
 });
