@@ -106,24 +106,30 @@ export type Database = {
       }
       circles: {
         Row: {
+          cover_path: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           home_area: string | null
           id: string
           invite_code: string
           name: string
         }
         Insert: {
+          cover_path?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           home_area?: string | null
           id?: string
           invite_code?: string
           name: string
         }
         Update: {
+          cover_path?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           home_area?: string | null
           id?: string
           invite_code?: string
@@ -296,6 +302,147 @@ export type Database = {
           {
             foreignKeyName: "engagement_daily_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_messages: {
+        Row: {
+          body: string
+          created_at: string
+          event_id: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          event_id: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_people: {
+        Row: {
+          added_at: string
+          event_id: string
+          is_lead: boolean
+          opted_out: boolean
+          role: Database["public"]["Enums"]["event_role"]
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          event_id: string
+          is_lead?: boolean
+          opted_out?: boolean
+          role?: Database["public"]["Enums"]["event_role"]
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          event_id?: string
+          is_lead?: boolean
+          opted_out?: boolean
+          role?: Database["public"]["Enums"]["event_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_people_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_people_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          chat_days_after: number
+          chat_enabled: boolean
+          circle_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gallery_enabled: boolean
+          id: string
+          location: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chat_days_after?: number
+          chat_enabled?: boolean
+          circle_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gallery_enabled?: boolean
+          id?: string
+          location?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chat_days_after?: number
+          chat_enabled?: boolean
+          circle_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          gallery_enabled?: boolean
+          id?: string
+          location?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -505,30 +652,94 @@ export type Database = {
           },
         ]
       }
+      photos: {
+        Row: {
+          author_id: string
+          circle_id: string
+          created_at: string
+          event_id: string | null
+          height: number | null
+          id: string
+          media_path: string
+          width: number | null
+        }
+        Insert: {
+          author_id: string
+          circle_id: string
+          created_at?: string
+          event_id?: string | null
+          height?: number | null
+          id?: string
+          media_path: string
+          width?: number | null
+        }
+        Update: {
+          author_id?: string
+          circle_id?: string
+          created_at?: string
+          event_id?: string | null
+          height?: number | null
+          id?: string
+          media_path?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_circle_id_fkey"
+            columns: ["circle_id"]
+            isOneToOne: false
+            referencedRelation: "circles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_path: string | null
           birthday: string | null
           created_at: string
           display_name: string
+          egg_style: Json
+          facts: Json
           id: string
           timezone: string
+          username: string
         }
         Insert: {
           avatar_path?: string | null
           birthday?: string | null
           created_at?: string
           display_name?: string
+          egg_style?: Json
+          facts?: Json
           id: string
           timezone?: string
+          username: string
         }
         Update: {
           avatar_path?: string | null
           birthday?: string | null
           created_at?: string
           display_name?: string
+          egg_style?: Json
+          facts?: Json
           id?: string
           timezone?: string
+          username?: string
         }
         Relationships: []
       }
@@ -791,9 +1002,23 @@ export type Database = {
           birthday: string | null
           circle_id: string | null
           display_name: string | null
+          egg_style: Json | null
+          facts: Json | null
           id: string | null
           joined_at: string | null
           role: Database["public"]["Enums"]["circle_role"] | null
+          username: string | null
+        }
+        Relationships: []
+      }
+      event_profiles: {
+        Row: {
+          avatar_path: string | null
+          display_name: string | null
+          egg_style: Json | null
+          event_id: string | null
+          id: string | null
+          username: string | null
         }
         Relationships: []
       }
@@ -841,11 +1066,49 @@ export type Database = {
       }
     }
     Functions: {
-      create_circle: {
-        Args: { home_area?: string; name: string }
+      add_event_guest_to_circle: {
+        Args: { p_event_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      add_people_to_event: {
+        Args: { p_event_id: string; p_people: Json }
+        Returns: number
+      }
+      circle_daily: {
+        Args: { p_circle_id: string; p_days?: number; p_today?: string }
         Returns: {
+          day: string
+          media_path: string
+          posted: boolean
+          posted_at: string
+          prompt: string
+          share_id: string
+          user_id: string
+        }[]
+      }
+      coop_overview: {
+        Args: { p_today?: string }
+        Returns: {
+          cover_path: string
+          description: string
+          home_area: string
+          id: string
+          invite_code: string
+          joined_at: string
+          members: number
+          name: string
+          streak: number
+          today_posted: boolean
+          today_user_id: string
+        }[]
+      }
+      create_circle: {
+        Args: { description?: string; home_area?: string; name: string }
+        Returns: {
+          cover_path: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           home_area: string | null
           id: string
           invite_code: string
@@ -854,6 +1117,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "circles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_event: {
+        Args: {
+          p_chat_days_after?: number
+          p_chat_enabled?: boolean
+          p_circle_id: string
+          p_description?: string
+          p_gallery_enabled?: boolean
+          p_location?: string
+          p_people?: Json
+          p_starts_at: string
+          p_title: string
+        }
+        Returns: {
+          chat_days_after: number
+          chat_enabled: boolean
+          circle_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gallery_enabled: boolean
+          id: string
+          location: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -868,8 +1164,10 @@ export type Database = {
       join_circle: {
         Args: { invite_code: string }
         Returns: {
+          cover_path: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           home_area: string | null
           id: string
           invite_code: string
@@ -884,6 +1182,43 @@ export type Database = {
       }
       leave_circle: { Args: { circle_id: string }; Returns: undefined }
       run_drift: { Args: { p_day?: string }; Returns: Json }
+      set_event_chat_timer: {
+        Args: { p_days: number; p_event_id: string }
+        Returns: {
+          chat_days_after: number
+          chat_enabled: boolean
+          circle_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gallery_enabled: boolean
+          id: string
+          location: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_event_opt_out: {
+        Args: { p_event_id: string; p_out: boolean }
+        Returns: undefined
+      }
+      set_event_person: {
+        Args: {
+          p_event_id: string
+          p_lead?: boolean
+          p_remove?: boolean
+          p_role?: Database["public"]["Enums"]["event_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       sunday_prompt: {
         Args: { p_name: string; p_week: string }
         Returns: string
@@ -901,12 +1236,45 @@ export type Database = {
           they_sent: boolean
         }[]
       }
+      update_event: {
+        Args: {
+          p_chat_enabled?: boolean
+          p_description?: string
+          p_event_id: string
+          p_gallery_enabled?: boolean
+          p_location?: string
+          p_starts_at?: string
+          p_title?: string
+        }
+        Returns: {
+          chat_days_after: number
+          chat_enabled: boolean
+          circle_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          gallery_enabled: boolean
+          id: string
+          location: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "events"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       user_media_paths: { Args: { p_user_id: string }; Returns: string[] }
+      username_available: { Args: { p_username: string }; Returns: boolean }
       verify_webhook_secret: { Args: { p_secret: string }; Returns: boolean }
     }
     Enums: {
       app_event_kind: "app_open"
       circle_role: "owner" | "member"
+      event_role: "edit" | "comment" | "view"
       interaction_kind: "egg" | "photo" | "voice" | "text"
       notification_type:
         | "interaction"
@@ -915,6 +1283,7 @@ export type Database = {
         | "spotlight"
         | "birthday"
         | "moment"
+        | "event"
       nudge_reason: "drift" | "cover" | "birthday" | "moment" | "spotlight"
       share_kind: "sunday" | "spotlight"
     }
@@ -1049,6 +1418,7 @@ export const Constants = {
     Enums: {
       app_event_kind: ["app_open"],
       circle_role: ["owner", "member"],
+      event_role: ["edit", "comment", "view"],
       interaction_kind: ["egg", "photo", "voice", "text"],
       notification_type: [
         "interaction",
@@ -1057,6 +1427,7 @@ export const Constants = {
         "spotlight",
         "birthday",
         "moment",
+        "event",
       ],
       nudge_reason: ["drift", "cover", "birthday", "moment", "spotlight"],
       share_kind: ["sunday", "spotlight"],
