@@ -9,7 +9,7 @@ import {
   type DemoAction,
 } from '@/api';
 import { Button, Screen } from '@/components';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 // A4.7 (dev) demo controls, built by Developer B (plan §5 load-balancing handoff of app/(dev)/).
 // Demo order: 1 Reset demo -> 2 Run drift + nudge. Keep the app OPEN on the nudge recipient's
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.xs,
   },
-  label: { ...type.caption, color: colors.textMuted, fontWeight: '600' },
-  section: { ...type.body, fontWeight: '600', color: colors.text, marginTop: spacing.md },
+  label: { ...type.caption, color: colors.textMuted, ...weight('600') },
+  section: { ...type.body, ...weight('600'), color: colors.text, marginTop: spacing.md },
   body: { ...type.body, color: colors.text },
   hint: { ...type.caption, color: colors.textMuted },
   error: { color: colors.danger },

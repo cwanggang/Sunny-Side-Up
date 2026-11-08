@@ -5,7 +5,7 @@ import { REACTION_EMOJI, useCoop, useFeed, usePeople, useReact, useSession, type
 import { Body, PhotoThumb, Screen, VoiceMemo } from '@/components';
 import { Avatar, EggButton } from '@/components/Coop';
 import { Egg } from '@/components/Egg';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 function timeAgo(iso: string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -101,11 +101,11 @@ function FeedCard({ item, me, nameOf, sender }: { item: FeedItem; me?: string; n
 }
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.md, padding: spacing.lg, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  card: { ...shadow.card, gap: spacing.md, padding: spacing.lg, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink },
   head: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   avatarGap: { width: 34, height: 34 },
-  who: { ...type.body, fontWeight: '700', color: colors.text },
-  to: { fontWeight: '600', color: colors.textSecondary },
+  who: { ...type.body, ...weight('700'), color: colors.text },
+  to: { ...weight('600'), color: colors.textSecondary },
   meta: { ...type.caption, color: colors.textMuted },
   private: { ...type.label, color: colors.textSecondary, backgroundColor: colors.surfaceAlt, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radii.pill, overflow: 'hidden' },
   eggRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
@@ -114,5 +114,5 @@ const styles = StyleSheet.create({
   reactions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   reaction: { paddingVertical: 6, paddingHorizontal: spacing.md, borderRadius: radii.pill, backgroundColor: colors.surfaceAlt, borderWidth: 1.5, borderColor: 'transparent' },
   reactionOn: { backgroundColor: colors.primarySoft, borderColor: palette.ink },
-  reactionText: { ...type.caption, fontWeight: '700', color: colors.text },
+  reactionText: { ...type.caption, ...weight('700'), color: colors.text },
 });

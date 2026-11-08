@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { chatOpen, isPast, useCoops, useEvents, useSession, useSetOptOut, type EventSummary } from '@/api';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 import { Body } from './Text';
 import { EggButton, Section } from './Coop';
@@ -148,12 +148,12 @@ const styles = StyleSheet.create({
   title: { ...type.heading, color: colors.text },
   sub: { ...type.caption, color: colors.textMuted },
   when: { alignItems: 'flex-end' },
-  whenText: { ...type.caption, fontWeight: '600', color: colors.text },
+  whenText: { ...type.caption, ...weight('600'), color: colors.text },
   chat: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   chatIcon: { fontSize: 20 },
   badge: { position: 'absolute', top: 6, right: 6, width: 9, height: 9, borderRadius: 5, backgroundColor: palette.coral },
   dayCard: { gap: 2, padding: spacing.md, borderRadius: radii.lg, backgroundColor: colors.surface },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
   chip: { paddingVertical: spacing.xs + 2, paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1.5, borderColor: colors.text, backgroundColor: colors.surface },
-  chipText: { ...type.caption, fontWeight: '600', color: colors.text },
+  chipText: { ...type.caption, ...weight('600'), color: colors.text },
 });

@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useMediaUrl, useVoicePlayer } from '@/api';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 /** A photo from the private media bucket (by path) or a local file (by uri). */
 export function PhotoThumb({ path, uri, size = 220 }: { path?: string | null; uri?: string | null; size?: number }) {
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: colors.primary,
   },
-  voiceLabel: { ...type.body, fontWeight: '700', color: colors.primaryText },
+  voiceLabel: { ...type.body, ...weight('700'), color: colors.primaryText },
   pressed: { opacity: 0.7 },
   disabled: { opacity: 0.5 },
 });

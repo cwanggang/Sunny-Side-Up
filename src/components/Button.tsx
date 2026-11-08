@@ -1,17 +1,31 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, shadow, type } from '@/theme';
+
+type Variant = 'primary' | 'secondary' | 'yolk' | 'danger';
 
 interface ButtonProps {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  /**
+   * The prototype's `.pill` buttons: primary = navy "solid", secondary = white "ghost",
+   * yolk = yellow "yolky" (celebratory actions), danger = ghost with red text.
+   */
+  variant?: Variant;
+  /** 40px tall instead of 50 (the prototype's `.pill.small`). */
+  small?: boolean;
   disabled?: boolean;
   loading?: boolean;
 }
 
-export function Button({ label, onPress, variant = 'primary', disabled, loading }: ButtonProps) {
-  const isPrimary = variant === 'primary';
+const textColor: Record<Variant, string> = {
+  primary: colors.solidText,
+  secondary: colors.text,
+  yolk: colors.primaryText,
+  danger: colors.danger,
+};
+
+export function Button({ label, onPress, variant = 'primary', small, disabled, loading }: ButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -19,22 +33,16 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading 
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.base,
-        isPrimary ? styles.primary : styles.secondary,
+        small && styles.small,
+        styles[variant],
         (disabled || loading) && styles.disabled,
         pressed && styles.pressed,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.primaryText : colors.text} />
+        <ActivityIndicator color={textColor[variant]} />
       ) : (
-        <Text
-          style={[
-            styles.label,
-            { color: isPrimary ? colors.primaryText : variant === 'danger' ? colors.danger : colors.text },
-          ]}
-        >
-          {label}
-        </Text>
+        <Text style={[styles.label, small && styles.smallLabel, { color: textColor[variant] }]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -42,14 +50,20 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading 
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: spacing.md + 2,
-    paddingHorizontal: spacing.xl,
+    height: 50,
+    paddingHorizontal: 22,
     borderRadius: radii.pill,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.text },
-  disabled: { opacity: 0.5 },
-  pressed: { opacity: 0.7 },
-  label: { ...type.body, fontWeight: '700' },
+  small: { height: 40, paddingHorizontal: 18 },
+  primary: { backgroundColor: colors.solid },
+  secondary: { backgroundColor: colors.surface, ...shadow.card },
+  yolk: { backgroundColor: colors.primary },
+  danger: { backgroundColor: colors.surface, ...shadow.card },
+  disabled: { opacity: 0.45 },
+  // The prototype's :active { transform: scale(.95) }.
+  pressed: { transform: [{ scale: 0.95 }] },
+  label: { ...type.button },
+  smallLabel: { fontSize: 14 },
 });

@@ -14,7 +14,7 @@ import {
   type Share,
 } from '@/api';
 import { Body, Button, Card, Egg, EggStylePicker, Label, PhotoThumb, ReactionBar, Screen, TextField } from '@/components';
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, spacing, type, weight } from '@/theme';
 
 const short = (day: string) => new Date(`${day}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short' }).toLowerCase();
 const timeOf = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).toLowerCase();
@@ -171,7 +171,7 @@ function Composer({ circleId }: { circleId: string }) {
 
 const styles = StyleSheet.create({
   prompt: { ...type.title, color: colors.text },
-  whose: { ...type.body, fontWeight: '700', color: colors.primaryDeep },
+  whose: { ...type.body, ...weight('700'), color: colors.primaryDeep },
   center: { alignItems: 'center', gap: spacing.sm },
   row: { flexDirection: 'row', gap: spacing.sm },
   flex: { flex: 1 },
@@ -184,5 +184,5 @@ const styles = StyleSheet.create({
   day: { minWidth: 76, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.md, backgroundColor: colors.surface },
   dayToday: { backgroundColor: colors.primary },
   dayName: { ...type.label, color: colors.textSecondary },
-  dayWho: { ...type.body, fontWeight: '700', color: colors.text },
+  dayWho: { ...type.body, ...weight('700'), color: colors.text },
 });

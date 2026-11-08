@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Linking, StyleSheet, View } from 'react-native';
+import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
 
 import {
+  eggOf,
   HEALTHKIT_ENABLED,
   requestSignalPermissions,
   setHomeLocation,
@@ -10,6 +11,7 @@ import {
   uploadSignalsNow,
   useConsent,
   useDeleteAccount,
+  useMyFullProfile,
   usePause,
   useSession,
   useSignalStatus,
@@ -19,17 +21,20 @@ import {
   type ConsentUpdate,
   type DailySignal,
 } from '@/api';
-import { Body, Button, Heading, ListItem, Screen, ToggleRow } from '@/components';
-import { spacing } from '@/theme';
+import { Body, Screen, SettingsGroup, SettingsRow } from '@/components';
+import { Avatar } from '@/components/Coop';
+import { colors, spacing, type, weight } from '@/theme';
 
 const PAUSES = [
-  { label: '1 day', hours: 24 },
-  { label: '3 days', hours: 72 },
-  { label: '1 week', hours: 168 },
+  { label: 'pause for a day', hours: 24 },
+  { label: 'pause for 3 days', hours: 72 },
+  { label: 'pause for a week', hours: 168 },
 ] as const;
 
 const fmtDateTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  new Date(iso)
+    .toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    .toLowerCase();
 
 function describeRow(r: DailySignal): string {
   const parts: string[] = [];
@@ -40,10 +45,12 @@ function describeRow(r: DailySignal): string {
   return parts.join(' · ') || 'nothing';
 }
 
-// A4.7 settings: signal toggles, permissions, set home, pause, what the app saw, notifications,
-// crisis line, sign out, delete account.
+// A4.7 settings in the v0.5 prototype's layout (grouped rows, lowercase). The privacy rows keep the
+// prototype's names but describe what this build really does (plan §9.1, §9.4, §9.9): friends never
+// see location, sleep or steps; only two location numbers and sleep/steps go to the server.
 export default function SettingsScreen() {
   const { session } = useSession();
+  const me = useMyFullProfile();
   const consent = useConsent();
   const update = useUpdateConsent();
   const status = useSignalStatus();
@@ -57,18 +64,21 @@ export default function SettingsScreen() {
   // Show the value being saved right away, then the saved value.
   const value = (key: keyof ConsentUpdate, data: Consent) =>
     update.isPending && update.variables?.[key] !== undefined ? !!update.variables[key] : data[key];
-  const toggle = (key: keyof ConsentUpdate) => (next: boolean) =>
-    update.mutate(
-      { [key]: next },
-      {
-        // Switching a signal ON also asks iOS for access right away (location, then Health).
-        onSuccess: () => {
-          if (next && (key === 'location' || key === 'health')) {
-            void run('perm', requestSignalPermissions, 'Access updated.');
-          }
+  const toggle = (key: keyof ConsentUpdate, data: Consent) => ({
+    value: value(key, data),
+    onChange: (next: boolean) =>
+      update.mutate(
+        { [key]: next },
+        {
+          // Switching a signal ON also asks iOS for access right away (location, then Health).
+          onSuccess: () => {
+            if (next && (key === 'location' || key === 'health')) {
+              void run('perm', requestSignalPermissions, 'access updated.');
+            }
+          },
         },
-      },
-    );
+      ),
+  });
 
   async function run(label: string, action: () => Promise<void>, done: string) {
     setBusy(label);
@@ -86,176 +96,170 @@ export default function SettingsScreen() {
 
   function confirmDelete() {
     Alert.alert(
-      'Delete your account?',
-      'This removes your profile, everything you posted, and your signal data, and takes you out of every circle. It cannot be undone.',
+      'delete your account?',
+      'this removes your profile, everything you posted, and your signal data, and takes you out of every coop. it cannot be undone.',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => deleteAccount.mutate() },
+        { text: 'cancel', style: 'cancel' },
+        { text: 'delete', style: 'destructive', onPress: () => deleteAccount.mutate() },
       ],
     );
   }
 
   const c = consent.data;
   const s = status.data;
+  const p = me.data;
   const pausedUntil = c?.paused_until && new Date(c.paused_until) > new Date() ? c.paused_until : null;
+  const locationState = !s
+    ? 'checking'
+    : s.locationBackground === 'granted'
+      ? 'always'
+      : s.locationForeground === 'granted'
+        ? 'only while open'
+        : s.locationForeground === 'denied'
+          ? 'blocked'
+          : 'not asked yet';
+  const needsIosSettings =
+    !!s && (s.locationForeground === 'denied' || (s.locationForeground === 'granted' && s.locationBackground !== 'granted'));
 
   return (
     <Screen
-      title="Settings"
+      title="settings"
       refreshing={consent.isRefetching || status.isRefetching}
       onRefresh={() => {
         void consent.refetch();
         void status.refetch();
         void saw.refetch();
+        void me.refetch();
       }}
     >
-      <Body muted>Signed in as {session?.user.email ?? 'unknown'}</Body>
-      <ListItem title="Edit profile" onPress={() => router.push('/profile-setup')} />
+      {/* `.set-me`: avatar, name, @username */}
+      <View style={styles.me}>
+        {p ? <Avatar person={{ avatarPath: p.avatar_path, egg: eggOf(p.egg_style), username: p.username }} size={74} /> : null}
+        <Text style={styles.meName}>{(p?.display_name ?? '').toLowerCase() || 'you'}</Text>
+        <Text style={styles.meHandle}>{p?.username ? `@${p.username}` : (session?.user.email ?? '')}</Text>
+      </View>
 
-      {consent.error ? <Body error>Couldn&apos;t load your settings: {consent.error.message}</Body> : null}
-      {update.error ? <Body error>Couldn&apos;t save: {update.error.message}</Body> : null}
+      {consent.error ? <Body error>couldn&apos;t load your settings: {consent.error.message}</Body> : null}
+      {update.error ? <Body error>couldn&apos;t save: {update.error.message}</Body> : null}
 
       {c ? (
         <>
-          <Heading>What the app may use</Heading>
-          <ToggleRow
-            title="Location summary"
-            description="Hours away from home and places visited per day. Your actual location stays on your phone."
-            value={value('location', c)}
-            onValueChange={toggle('location')}
-          />
-          {HEALTHKIT_ENABLED ? (
-            <ToggleRow
-              title="Sleep and steps"
-              description="Last night's hours of sleep and yesterday's steps, from Apple Health."
-              value={value('health', c)}
-              onValueChange={toggle('health')}
+          <SettingsGroup title="notifications">
+            <SettingsRow title="daily photo reminder" toggle={toggle('notify_daily_photo', c)} />
+            <SettingsRow title="sunny sunday reminder" toggle={toggle('notify_sunday', c)} />
+            <SettingsRow title="when friends post" toggle={toggle('notify_friend_posts', c)} />
+          </SettingsGroup>
+
+          <SettingsGroup title="privacy">
+            <SettingsRow title="who sees my photos" value="only my coops" />
+            <SettingsRow
+              title="location summary"
+              description="your phone counts hours away from home and places visited. only those two numbers leave your phone. friends never see your location."
+              toggle={toggle('location', c)}
             />
-          ) : null}
-          <ToggleRow
-            title="Friendly nudges about me"
-            description="If you've been quieter than usual, a friend may get a nudge to reach out."
-            value={value('auto_nudges', c)}
-            onValueChange={toggle('auto_nudges')}
-          />
-          <ListItem title="How your data is used" onPress={() => router.push('/consent')} />
+            {HEALTHKIT_ENABLED ? (
+              <SettingsRow
+                title="sleep and steps"
+                description="last night's sleep and yesterday's steps help the app notice a quiet stretch. friends never see them."
+                toggle={toggle('health', c)}
+              />
+            ) : null}
+            <SettingsRow
+              title="friendly nudges about me"
+              description="let the app nudge a friend to check in when you've been quiet. they're never told why."
+              toggle={toggle('auto_nudges', c)}
+            />
+            <SettingsRow title="photos last" value="until the next rotation" />
+            <SettingsRow title="how your data is used" onPress={() => router.push('/consent')} />
+          </SettingsGroup>
 
-          <Heading>On this phone</Heading>
-          {s ? (
-            <>
-              <Body muted>
-                Location:{' '}
-                {s.locationBackground === 'granted'
-                  ? 'always allowed'
-                  : s.locationForeground === 'granted'
-                    ? 'only while using the app (needs "Always" for daily numbers)'
-                    : s.locationForeground === 'denied'
-                      ? 'blocked in iPhone Settings'
-                      : 'not asked yet'}
-              </Body>
-              <Body muted>Home: {s.homeSet ? 'set' : 'not set'}</Body>
-              <Body muted>Last upload: {s.lastUploadAt ? fmtDateTime(s.lastUploadAt) : 'none yet'}</Body>
-            </>
-          ) : null}
-          <Button
-            variant="secondary"
-            label="Allow access on this phone"
-            onPress={() => void run('perm', requestSignalPermissions, 'Access updated.')}
-            loading={busy === 'perm'}
-            disabled={!c.location && !(c.health && HEALTHKIT_ENABLED)}
-          />
-          {s && (s.locationForeground === 'denied' || (s.locationForeground === 'granted' && s.locationBackground !== 'granted')) ? (
-            <>
-              <Body muted>
-                iOS only asks once. To change it: Settings app → Sunny Side Up → Location → Always. For sleep and
-                steps: Health app → your profile → Apps → Sunny Side Up.
-              </Body>
-              <Button variant="secondary" label="Open iPhone Settings" onPress={() => void Linking.openSettings()} />
-            </>
-          ) : null}
-          <Button
-            variant="secondary"
-            label="I'm home: set home here"
-            onPress={() => void run('home', setHomeLocation, 'Home saved on this phone.')}
-            loading={busy === 'home'}
-            disabled={!c.location}
-          />
-          <Button
-            variant="secondary"
-            label="Send yesterday's numbers now"
-            onPress={() =>
-              void run('upload', async () => setMessage(await uploadSignalsNow()), '').then(() => saw.refetch())
-            }
-            loading={busy === 'upload'}
-          />
-          {message ? <Body muted>{message}</Body> : null}
+          <SettingsGroup title="on this phone">
+            <SettingsRow title="location access" value={locationState} />
+            <SettingsRow title="home" value={s?.homeSet ? 'set' : 'not set'} />
+            <SettingsRow title="last upload" value={s?.lastUploadAt ? fmtDateTime(s.lastUploadAt) : 'none yet'} />
+            {c.location || (c.health && HEALTHKIT_ENABLED) ? (
+              <SettingsRow
+                title="allow access on this phone"
+                onPress={() => void run('perm', requestSignalPermissions, 'access updated.')}
+                loading={busy === 'perm'}
+              />
+            ) : null}
+            {needsIosSettings ? (
+              <SettingsRow
+                title="open iphone settings"
+                description='ios only asks once. choose location → "always". for sleep and steps: health app → profile → apps.'
+                onPress={() => void Linking.openSettings()}
+              />
+            ) : null}
+            {c.location ? (
+              <SettingsRow
+                title="i'm home: set home here"
+                onPress={() => void run('home', setHomeLocation, 'home saved on this phone.')}
+                loading={busy === 'home'}
+              />
+            ) : null}
+            <SettingsRow
+              title="send yesterday's numbers now"
+              onPress={() => void run('upload', async () => setMessage(await uploadSignalsNow()), '').then(() => saw.refetch())}
+              loading={busy === 'upload'}
+            />
+          </SettingsGroup>
+          {message ? <Body muted>{message.toLowerCase()}</Body> : null}
 
-          <Heading>Notifications</Heading>
-          <ToggleRow title="Daily photo reminder" value={value('notify_daily_photo', c)} onValueChange={toggle('notify_daily_photo')} />
-          <ToggleRow title="Sunday share reminder" value={value('notify_sunday', c)} onValueChange={toggle('notify_sunday')} />
-          <ToggleRow title="When friends post" value={value('notify_friend_posts', c)} onValueChange={toggle('notify_friend_posts')} />
-
-          <Heading>Pause</Heading>
-          <Body muted>
-            {pausedUntil
-              ? `Paused until ${fmtDateTime(pausedUntil)}. No nudges about you and no reminders to you.`
-              : 'Take a break: no nudges about you and no reminders to you.'}
-          </Body>
-          {pausedUntil ? (
-            <Button variant="secondary" label="Resume now" onPress={() => pause.mutate({ until: null })} loading={pause.isPending} />
-          ) : (
-            <View style={styles.row}>
-              {PAUSES.map((p) => (
-                <View key={p.label} style={styles.third}>
-                  <Button
-                    variant="secondary"
-                    label={p.label}
-                    onPress={() => pause.mutate({ until: new Date(Date.now() + p.hours * 3_600_000).toISOString() })}
-                    disabled={pause.isPending}
-                  />
-                </View>
-              ))}
-            </View>
-          )}
+          <SettingsGroup title="pause">
+            {pausedUntil ? (
+              <SettingsRow title="paused until" value={fmtDateTime(pausedUntil)} />
+            ) : (
+              <SettingsRow title="take a break" description="no nudges about you and no reminders to you." />
+            )}
+            {pausedUntil ? (
+              <SettingsRow title="resume now" onPress={() => pause.mutate({ until: null })} loading={pause.isPending} />
+            ) : (
+              PAUSES.map((x) => (
+                <SettingsRow
+                  key={x.label}
+                  title={x.label}
+                  onPress={() => pause.mutate({ until: new Date(Date.now() + x.hours * 3_600_000).toISOString() })}
+                />
+              ))
+            )}
+          </SettingsGroup>
           {pause.error ? <Body error>{pause.error.message}</Body> : null}
         </>
       ) : null}
 
-      <Heading>What the app saw</Heading>
-      <Body muted>Exactly what was uploaded for you, one row per day.</Body>
+      <SettingsGroup title="what the app saw">
+        <SettingsRow title="exactly what was uploaded for you" description="one row per day, last two weeks." />
+        {saw.data?.length === 0 ? <SettingsRow title="nothing uploaded yet" /> : null}
+        {(saw.data ?? []).map((r) => (
+          <SettingsRow key={r.day} title={r.day} description={describeRow(r)} />
+        ))}
+      </SettingsGroup>
       {saw.error ? <Body error>{saw.error.message}</Body> : null}
-      {saw.data?.length === 0 ? <Body muted>Nothing uploaded yet.</Body> : null}
-      {saw.data?.map((r) => (
-        <ListItem key={r.day} title={r.day} subtitle={describeRow(r)} />
-      ))}
 
-      <Heading>If you&apos;re struggling</Heading>
-      <Body muted>Call or text 988, the Suicide &amp; Crisis Lifeline.</Body>
-      <View style={styles.row}>
-        <View style={styles.half}>
-          <Button variant="secondary" label="Call 988" onPress={() => Linking.openURL('tel:988')} />
-        </View>
-        <View style={styles.half}>
-          <Button variant="secondary" label="Text 988" onPress={() => Linking.openURL('sms:988')} />
-        </View>
-      </View>
+      <SettingsGroup title="if you're struggling">
+        <SettingsRow title="call 988" description="suicide & crisis lifeline" onPress={() => void Linking.openURL('tel:988')} />
+        <SettingsRow title="text 988" onPress={() => void Linking.openURL('sms:988')} />
+      </SettingsGroup>
 
-      <Heading>Account</Heading>
-      <ListItem title="Demo controls (dev)" onPress={() => router.push('/demo')} />
-      <Button
-        variant="secondary"
-        label="Sign out"
-        onPress={() => void run('signout', signOut, '')}
-        loading={busy === 'signout'}
-      />
-      {deleteAccount.error ? <Body error>Couldn&apos;t delete: {deleteAccount.error.message}</Body> : null}
-      <Button variant="danger" label="Delete account" onPress={confirmDelete} loading={deleteAccount.isPending} />
+      <SettingsGroup title="account">
+        <SettingsRow title="edit profile" onPress={() => router.push('/profile')} />
+        <SettingsRow title="demo controls" onPress={() => router.push('/demo')} />
+        <SettingsRow title="sign out" onPress={() => void run('signout', signOut, '')} loading={busy === 'signout'} />
+        <SettingsRow title="delete account" danger onPress={confirmDelete} loading={deleteAccount.isPending} />
+      </SettingsGroup>
+      {deleteAccount.error ? <Body error>couldn&apos;t delete: {deleteAccount.error.message}</Body> : null}
+
+      <SettingsGroup title="about">
+        <SettingsRow title="sunny side up" value="hackathon build" />
+        <SettingsRow title="egg check (dom test)" onPress={() => router.push('/dom-check')} />
+      </SettingsGroup>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: spacing.sm },
-  half: { flex: 1 },
-  third: { flex: 1 },
+  me: { alignItems: 'center', gap: 6, paddingTop: 6, paddingBottom: spacing.lg },
+  meName: { ...type.title, fontSize: 22, ...weight('600'), color: colors.text, marginTop: 6 },
+  meHandle: { ...type.caption, fontSize: 12.5, color: colors.textSecondary },
 });

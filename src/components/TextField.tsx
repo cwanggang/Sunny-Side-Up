@@ -1,32 +1,48 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, type } from '@/theme';
 
 interface TextFieldProps extends TextInputProps {
   label: string;
 }
 
-/** Plain labelled text input. */
-export function TextField({ label, style, ...rest }: TextFieldProps) {
+/** Labelled text input (the prototype's `.field`): white, 1px line, yolk border while focused. */
+export function TextField({ label, style, onFocus, onBlur, ...rest }: TextFieldProps) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.root}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput placeholderTextColor={colors.textMuted} style={[styles.input, style]} {...rest} />
+      <TextInput
+        placeholderTextColor={colors.textMuted}
+        selectionColor={colors.primaryDeep}
+        style={[styles.input, focused && styles.focused, style]}
+        onFocus={(e) => {
+          setFocused(true);
+          onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setFocused(false);
+          onBlur?.(e);
+        }}
+        {...rest}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { gap: spacing.xs },
-  label: { ...type.label, color: colors.textSecondary },
+  root: { gap: 6 },
+  label: { ...type.label, color: colors.textSecondary, marginHorizontal: 6 },
   input: {
     ...type.body,
     color: colors.text,
     backgroundColor: colors.surface,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radii.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    borderRadius: radii.md,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
   },
+  focused: { borderColor: colors.primary },
 });

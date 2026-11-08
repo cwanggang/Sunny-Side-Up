@@ -29,7 +29,7 @@ import { Body, Button } from '@/components';
 import { Avatar, AvatarStack, KV, Segmented } from '@/components/Coop';
 import { fmtLong, fmtShort, fmtTime } from '@/components/EventsView';
 import { Masonry } from '@/components/Gallery';
-import { colors, palette, radii, spacing, type } from '@/theme';
+import { colors, palette, radii, spacing, type, weight } from '@/theme';
 
 const TABS = ['details', 'chat', 'people', 'gallery'] as const;
 type Tab = (typeof TABS)[number];
@@ -309,10 +309,10 @@ const styles = StyleSheet.create({
   title: { ...type.display, color: colors.text },
   optout: { alignSelf: 'flex-start', paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1.5, borderColor: colors.text },
   backIn: { backgroundColor: colors.primarySoft },
-  optoutText: { ...type.caption, fontWeight: '700', color: colors.text },
+  optoutText: { ...type.caption, ...weight('700'), color: colors.text },
   panel: { padding: spacing.lg, gap: spacing.sm, paddingBottom: spacing.xxl },
   chatTop: { paddingHorizontal: spacing.lg, gap: spacing.xs },
-  ttl: { ...type.caption, fontWeight: '600', color: colors.text },
+  ttl: { ...type.caption, ...weight('600'), color: colors.text },
   chatRow2: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   note: { ...type.caption, color: colors.textMuted },
   msgs: { padding: spacing.lg, gap: spacing.sm },
@@ -328,16 +328,16 @@ const styles = StyleSheet.create({
   sendText: { ...type.heading, color: colors.primaryText },
   closedBar: { ...type.caption, textAlign: 'center', color: colors.textMuted, padding: spacing.lg, paddingBottom: spacing.xl, backgroundColor: colors.surfaceAlt },
   smallChip: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radii.pill, borderWidth: 1.5, borderColor: colors.text, backgroundColor: colors.surface },
-  smallChipText: { ...type.caption, fontWeight: '600', color: colors.text },
+  smallChipText: { ...type.caption, ...weight('600'), color: colors.text },
   scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl, padding: spacing.xl, gap: spacing.sm, paddingBottom: spacing.xxl },
   sheetTitle: { ...type.heading, color: colors.text },
   opt: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.md, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: palette.line },
   optText: { ...type.body, color: colors.text },
   person: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
-  pName: { ...type.body, fontWeight: '700', color: colors.text },
+  pName: { ...type.body, ...weight('700'), color: colors.text },
   role: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radii.pill, backgroundColor: colors.surfaceAlt },
   roleLead: { backgroundColor: colors.primarySoft },
-  roleText: { ...type.caption, fontWeight: '600', color: colors.text },
+  roleText: { ...type.caption, ...weight('600'), color: colors.text },
   galHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
 });

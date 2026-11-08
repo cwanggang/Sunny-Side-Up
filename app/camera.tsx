@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCameraCapture, useCoops, useDailyPrompt, usePhotoPicker, usePostDailyPhoto, useSession } from '@/api';
 import { Body, Button, EggStylePicker } from '@/components';
 import { FriedEgg } from '@/components/Egg';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 // Design v0.5 camera (A5, Developer B): "to: <coop>" picks which of today's coops gets the photo
 // (only coops where it's your day), today's prompt, the egg shutter (system camera) or your photos,
@@ -99,7 +99,7 @@ export default function CameraScreen() {
             style={styles.toPill}
           >
             <Text style={styles.toText}>
-              to: <Text style={{ fontWeight: '800' }}>{target?.name ?? '…'}</Text>
+              to: <Text style={{ ...weight('800') }}>{target?.name ?? '…'}</Text>
               {myDays.length > 1 ? '  ⌄' : ''}
             </Text>
           </Pressable>
@@ -200,9 +200,9 @@ const styles = StyleSheet.create({
   closeText: { ...type.heading, color: colors.text },
   toPill: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: radii.pill, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink },
   toText: { ...type.body, color: colors.text },
-  toMenu: { position: 'absolute', top: 64, alignSelf: 'center', zIndex: 10, minWidth: 220, padding: spacing.md, gap: spacing.xs, borderRadius: radii.lg, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  toMenu: { ...shadow.card, position: 'absolute', top: 64, alignSelf: 'center', zIndex: 10, minWidth: 220, padding: spacing.md, gap: spacing.xs, borderRadius: radii.lg, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink },
   toRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm },
-  toRowText: { ...type.body, fontWeight: '700', color: colors.text },
+  toRowText: { ...type.body, ...weight('700'), color: colors.text },
   body: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg, alignItems: 'center' },
   vf: { borderRadius: radii.xl, overflow: 'hidden', backgroundColor: palette.pan, borderWidth: 2, borderColor: palette.ink },
   vfEmpty: { flex: 1, alignItems: 'center', justifyContent: 'center' },

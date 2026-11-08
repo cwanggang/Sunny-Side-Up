@@ -20,7 +20,8 @@ export function Body({ children, muted, error }: { children: ReactNode; muted?: 
 
 const styles = StyleSheet.create({
   heading: { ...type.title, color: colors.text, marginTop: spacing.md },
-  label: { ...type.label, color: colors.textSecondary },
+  // The prototype's `.set-h` section label: 12.5px semibold, ink-2, indented slightly.
+  label: { ...type.label, color: colors.textSecondary, marginTop: spacing.md, marginHorizontal: 6 },
   body: { ...type.body, color: colors.text },
   muted: { color: colors.textMuted },
   error: { color: colors.danger },

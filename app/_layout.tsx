@@ -1,3 +1,10 @@
+import {
+  Lexend_400Regular,
+  Lexend_500Medium,
+  Lexend_600SemiBold,
+  Lexend_700Bold,
+  useFonts,
+} from '@expo-google-fonts/lexend';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -12,7 +19,7 @@ import {
   useSignalSync,
 } from '@/api';
 
-// Keep the native splash up until the stored session has been restored (A1.1).
+// Keep the native splash up until the stored session is restored (A1.1) and Lexend is loaded (A5.1).
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
@@ -27,8 +34,11 @@ export default function RootLayout() {
 // Every route must be listed under one of the guards, or it would be reachable signed out.
 // Exception: join/[code] is open to both, so an invite link opened while signed out survives sign-in.
 function RootStack() {
-  const { session, loading } = useSession();
+  const { session, loading: sessionLoading } = useSession();
   const signedIn = !!session;
+  // A5.1: the prototype's font. If loading fails, screens fall back to the system font.
+  const [fontsLoaded, fontError] = useFonts({ Lexend_400Regular, Lexend_500Medium, Lexend_600SemiBold, Lexend_700Bold });
+  const loading = sessionLoading || (!fontsLoaded && !fontError);
 
   // A1.4: own `notifications` rows → local notifications (no-op while signed out).
   useNotifications();
@@ -80,6 +90,8 @@ function RootStack() {
         <Stack.Screen name="member/[userId]" />
         {/* Design v0.5 (A5 handoff to Developer B) */}
         <Stack.Screen name="camera" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        {/* A5 temporary: DOM component check */}
+        <Stack.Screen name="dom-check" />
       </Stack.Protected>
 
       <Stack.Screen name="join/[code]" />

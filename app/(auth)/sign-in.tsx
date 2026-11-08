@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInWithEmail, signUpWithEmail } from '@/api';
 import { Button, TextField } from '@/components';
 import { FriedEgg } from '@/components/Egg';
-import { colors, palette, radii, shadow, spacing, type } from '@/theme';
+import { colors, palette, radii, shadow, spacing, type, weight } from '@/theme';
 
 // Design v0.5 sign-in (A5.2, Developer B): the splash egg and "tap to come in", then email +
 // password in an egg-white card (P0.8: no emails are sent). The auth gate in app/_layout.tsx
@@ -102,9 +102,9 @@ const styles = StyleSheet.create({
   splash: { alignItems: 'center', gap: spacing.md },
   word: { ...type.display, fontSize: 44, color: colors.text, textAlign: 'center' },
   hint: { ...type.label, color: colors.textSecondary, marginTop: spacing.lg },
-  card: { gap: spacing.md, padding: spacing.xl, borderRadius: radii.xl, backgroundColor: colors.eggWhite, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  card: { ...shadow.card, gap: spacing.md, padding: spacing.xl, borderRadius: radii.xl, backgroundColor: colors.eggWhite, borderWidth: 2, borderColor: palette.ink },
   cardTitle: { ...type.title, color: colors.text, textAlign: 'center' },
   error: { ...type.body, color: colors.danger },
   switch: { alignItems: 'center', paddingVertical: spacing.sm },
-  switchText: { ...type.caption, fontWeight: '700', color: colors.textSecondary, textDecorationLine: 'underline' },
+  switchText: { ...type.caption, ...weight('700'), color: colors.textSecondary, textDecorationLine: 'underline' },
 });

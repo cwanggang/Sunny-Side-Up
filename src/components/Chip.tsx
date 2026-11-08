@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, type, weight } from '@/theme';
 
 interface ChipProps {
   label: string;
@@ -25,16 +25,18 @@ export function Chip({ label, selected, onPress, disabled }: ChipProps) {
 }
 
 const styles = StyleSheet.create({
+  // The prototype's chips: white pill with a 1px line; selected = navy with white text.
   chip: {
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.md,
+    height: 34,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
     borderRadius: radii.pill,
-    borderWidth: 1.5,
-    borderColor: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
     backgroundColor: colors.surface,
   },
-  selected: { backgroundColor: colors.primary, borderColor: colors.text },
-  pressed: { opacity: 0.7 },
-  label: { ...type.caption, fontWeight: '600', color: colors.text },
-  selectedLabel: { color: colors.primaryText, fontWeight: '700' },
+  selected: { backgroundColor: colors.solid, borderColor: colors.solid },
+  pressed: { transform: [{ scale: 0.95 }] },
+  label: { ...type.caption, ...weight('500'), color: colors.text },
+  selectedLabel: { color: colors.solidText, ...weight('600') },
 });
