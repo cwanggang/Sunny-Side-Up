@@ -50,7 +50,7 @@ function RootStack() {
   return (
     <Stack>
       <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="(auth)/sign-in" />
+        <Stack.Screen name="(auth)/sign-in" options={{ headerShown: false }} />
       </Stack.Protected>
 
       <Stack.Protected guard={signedIn}>
@@ -78,6 +78,8 @@ function RootStack() {
         <Stack.Screen name="event/[eventId]" />
         <Stack.Screen name="event/new" />
         <Stack.Screen name="member/[userId]" />
+        {/* Design v0.5 (A5 handoff to Developer B) */}
+        <Stack.Screen name="camera" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       </Stack.Protected>
 
       <Stack.Screen name="join/[code]" />

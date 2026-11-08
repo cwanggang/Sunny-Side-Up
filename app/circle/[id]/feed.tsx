@@ -1,11 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { useCircleMembers, useFeed, useReact, useSession, type FeedItem } from '@/api';
-import { Body, Button, Chip, PhotoThumb, Screen, VoiceMemo } from '@/components';
-import { colors, radii, spacing, type } from '@/theme';
-
-const REACTIONS = ['❤️', '😂', '🥚', '🙌'] as const;
+import { REACTION_EMOJI, useCoop, useFeed, usePeople, useReact, useSession, type FeedItem, type Person } from '@/api';
+import { Body, PhotoThumb, Screen, VoiceMemo } from '@/components';
+import { Avatar, EggButton } from '@/components/Coop';
+import { Egg } from '@/components/Egg';
+import { colors, palette, radii, shadow, spacing, type } from '@/theme';
 
 function timeAgo(iso: string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -16,63 +16,82 @@ function timeAgo(iso: string): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
-// A2.6 feed: live eggs, texts, photos and voice memos, with reactions.
+// A2.6 feed, design v0.5 look (A5.2, Developer B): live eggs, texts, photos and voice memos,
+// with reactions. Directed items show "→ name" and are only visible to the two of you (P0.13).
 export default function FeedScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useSession();
   const me = session?.user.id;
+  const coop = useCoop(id);
   const feed = useFeed(id);
-  const members = useCircleMembers(id);
+  const people = usePeople();
 
+  const personOf = (userId: string | null) => (userId ? people.data?.people.get(userId) : undefined);
   const nameOf = (userId: string | null) => {
     if (!userId) return 'everyone';
     if (userId === me) return 'you';
-    return members.data?.find((m) => m.userId === userId)?.displayName ?? 'someone';
+    return personOf(userId)?.username ?? 'someone';
   };
 
   return (
-    <Screen title="Feed" refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()}>
-      <Button label="Send something" onPress={() => router.push(`/circle/${id}/compose`)} />
-      {feed.isPending ? <Body muted>Loading…</Body> : null}
-      {feed.error ? <Body error>Couldn&apos;t load the feed: {feed.error.message}</Body> : null}
-      {feed.data?.length === 0 ? <Body muted>Nothing here yet. Send the first egg!</Body> : null}
+    <Screen title={coop ? `${coop.name} feed` : 'feed'} refreshing={feed.isRefetching} onRefresh={() => void feed.refetch()}>
+      <EggButton label="send something" onPress={() => router.push(`/circle/${id}/compose`)} />
+      {feed.isPending ? <Body muted>cracking eggs…</Body> : null}
+      {feed.error ? <Body error>couldn&apos;t load the feed: {feed.error.message}</Body> : null}
+      {feed.data?.length === 0 ? <Body muted>nothing here yet. send the first egg!</Body> : null}
       {feed.data?.map((item) => (
-        <FeedCard key={item.id} item={item} me={me} nameOf={nameOf} />
+        <FeedCard key={item.id} item={item} me={me} nameOf={nameOf} sender={personOf(item.sender_id)} />
       ))}
     </Screen>
   );
 }
 
-function FeedCard({ item, me, nameOf }: { item: FeedItem; me?: string; nameOf: (id: string | null) => string }) {
+function FeedCard({ item, me, nameOf, sender }: { item: FeedItem; me?: string; nameOf: (id: string | null) => string; sender?: Person }) {
   const react = useReact();
-  const sender = nameOf(item.sender_id);
-  const from = sender === 'you' ? 'You' : sender;
-  const to = item.recipient_id ? ` → ${nameOf(item.recipient_id)}` : '';
+  const to = item.recipient_id ? nameOf(item.recipient_id) : null;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.meta}>
-        {from}
-        {to} · {timeAgo(item.created_at)}
-      </Text>
+      <View style={styles.head}>
+        {sender ? <Avatar person={sender} size={34} /> : <View style={styles.avatarGap} />}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.who}>
+            {nameOf(item.sender_id)}
+            {to ? <Text style={styles.to}> → {to}</Text> : null}
+          </Text>
+          <Text style={styles.meta}>{timeAgo(item.created_at)}</Text>
+        </View>
+        {to ? <Text style={styles.private}>just you two</Text> : null}
+      </View>
 
-      {item.kind === 'egg' ? <Text style={styles.egg}>🥚</Text> : null}
+      {item.kind === 'egg' ? (
+        <View style={styles.eggRow}>
+          <Egg size={56} swatch={sender?.egg.swatch ?? 'shell'} pattern={sender?.egg.pattern ?? 'none'} />
+          <Text style={styles.eggText}>sent {to ? (to === 'you' ? 'you' : to) : 'everyone'} an egg</Text>
+        </View>
+      ) : null}
       {item.kind === 'text' ? <Text style={styles.body}>{item.body}</Text> : null}
       {item.kind === 'photo' ? <PhotoThumb path={item.media_path} /> : null}
       {item.kind === 'voice' ? <VoiceMemo path={item.media_path} /> : null}
 
       <View style={styles.reactions}>
-        {REACTIONS.map((emoji) => {
+        {REACTION_EMOJI.map((emoji) => {
           const count = item.reactions.filter((r) => r.emoji === emoji).length;
           const mine = item.reactions.some((r) => r.emoji === emoji && r.user_id === me);
           return (
-            <Chip
+            <Pressable
               key={emoji}
-              label={count > 0 ? `${emoji} ${count}` : emoji}
-              selected={mine}
+              accessibilityRole="button"
+              accessibilityLabel={`react ${emoji}`}
               disabled={react.isPending}
               onPress={() => react.mutate({ interactionId: item.id, emoji })}
-            />
+              style={[styles.reaction, mine && styles.reactionOn]}
+            >
+              <Text style={styles.reactionText}>
+                {emoji}
+                {count ? ` ${count}` : ''}
+              </Text>
+            </Pressable>
           );
         })}
       </View>
@@ -82,15 +101,18 @@ function FeedCard({ item, me, nameOf }: { item: FeedItem; me?: string; nameOf: (
 }
 
 const styles = StyleSheet.create({
-  card: {
-    gap: spacing.sm,
-    padding: spacing.lg,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
+  card: { gap: spacing.md, padding: spacing.lg, borderRadius: radii.xl, backgroundColor: colors.surface, borderWidth: 2, borderColor: palette.ink, ...shadow.card },
+  head: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  avatarGap: { width: 34, height: 34 },
+  who: { ...type.body, fontWeight: '700', color: colors.text },
+  to: { fontWeight: '600', color: colors.textSecondary },
   meta: { ...type.caption, color: colors.textMuted },
-  egg: { ...type.title, color: colors.text },
-  body: { ...type.body, color: colors.text },
+  private: { ...type.label, color: colors.textSecondary, backgroundColor: colors.surfaceAlt, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radii.pill, overflow: 'hidden' },
+  eggRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  eggText: { ...type.heading, color: colors.text },
+  body: { ...type.body, fontSize: 17, color: colors.text },
   reactions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  reaction: { paddingVertical: 6, paddingHorizontal: spacing.md, borderRadius: radii.pill, backgroundColor: colors.surfaceAlt, borderWidth: 1.5, borderColor: 'transparent' },
+  reactionOn: { backgroundColor: colors.primarySoft, borderColor: palette.ink },
+  reactionText: { ...type.caption, fontWeight: '700', color: colors.text },
 });
