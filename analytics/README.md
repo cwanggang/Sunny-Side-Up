@@ -75,7 +75,30 @@ Make a dataset/report from each view, then a dashboard:
 The demo circle shows a dip over the last 3 days (one friend went quiet), without saying who.
 Data is refreshed by the nightly drift job (08:00 UTC), by **Reset demo** (history is rebuilt at once) and whenever the demo runs drift + nudge.
 
-Status (2026-11-08): role `informer_ro` has login on and reads only these views (checked: no access to `public`). The demo coop shows the dip and `alert = true`. **Left to do by a person with an Informer login:** Parts 1, 4 and 5 (connect the datasource, build the dashboard, screenshots).
+Status (2026-11-08): role `informer_ro` has login on and reads only these views (checked: no access to `public`). The demo coop shows the dip and `alert = true`. Datasource, datasets and dashboard are **set up** (see below).
+
+## What's built in Informer (2026-11-08)
+
+Site: `https://018mbojwu.go.informer.cloud/`
+
+- **Datasource `Sunny-side-up`**: PostgreSQL via the session pooler as `informer_ro`, SSL on, schema list
+  **`analytics` only** (the `public` schema was removed from the list; `informer_ro` can't read it anyway).
+  Scanned mappings: the 7 analytics views.
+- **Datasets (Native SQL):**
+  - `Coop engagement daily`: `analytics.circle_engagement_daily`, coops with 7+ days of history only (new
+    test coops with one day would skew the daily average). `day` is passed as noon
+    (`day::timestamp + interval '12 hours'`) so Informer doesn't shift the labels a day back (UTC).
+  - `Coop engagement alerts`: `analytics.circle_engagement_alerts where alert`.
+  - `Nudges per day`: `analytics.nudge_daily`.
+- **Dashboard `Sunny Side Up: coop health`** (Reports): trend line of average activity per member by day,
+  the alert table, and a "friendly nudges sent" KPI.
+- Screenshots: `analytics/screenshots/dashboard-engagement-and-alert.jpg`,
+  `analytics/screenshots/dashboard-nudges-kpi.jpg`.
+
+**Before the demo:** after **Reset demo**, open each dataset and press **Run** (or Reload on the dashboard)
+so Informer picks up the fresh data. Informer caches dataset results.
+
+Not set up: an Informer alert/notification on the alert dataset (optional).
 Put screenshots for the pitch in `analytics/screenshots/`.
 
 ## Views reference (schema `analytics`)

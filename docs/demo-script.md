@@ -11,7 +11,8 @@
 1. Every phone: app open, signed in, on home.
 2. Demo screen → **Reset demo**. Then `cd scripts && npm run demo-status`: all three say
    *tap "Run drift + nudge"*, which is the ready state.
-3. Informer: refresh the dashboard; the demo coop's line should dip at the end and the alert table
+3. Informer (`https://018mbojwu.go.informer.cloud/`, Reports → **Sunny Side Up: coop health**): press
+   **Reload** (Informer caches dataset results). The line should dip at the end and the alert table
    should show one row.
 
 ## The pitch
