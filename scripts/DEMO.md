@@ -20,6 +20,8 @@ commands run from the repo root.
    `demo-status` should now show `next_step: tap "Run drift + nudge"…` for all three: that **is** the
    ready state (it flips to `ready` once drift has run).
 5. Every demo phone: open the app, sign in, open the **Sunny Side Up Demo** circle once.
+6. Informer: open the **Sunny Side Up: coop health** dashboard and press **Reload** so it shows the fresh
+   history (see `analytics/README.md`).
 
 ## The demo itself (about 2 minutes)
 
