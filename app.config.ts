@@ -25,7 +25,6 @@ const config: ExpoConfig = {
 
   ios: {
     bundleIdentifier: BUNDLE_ID,
-    icon: './assets/expo.icon',
     supportsTablet: false,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -35,7 +34,7 @@ const config: ExpoConfig = {
   android: {
     package: BUNDLE_ID,
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#F7F5EF',
       foregroundImage: './assets/images/android-icon-foreground.png',
       backgroundImage: './assets/images/android-icon-background.png',
       monochromeImage: './assets/images/android-icon-monochrome.png',
@@ -52,9 +51,9 @@ const config: ExpoConfig = {
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#208AEF',
+        backgroundColor: '#F7F5EF',
         image: './assets/images/splash-icon.png',
-        imageWidth: 76,
+        imageWidth: 200,
       },
     ],
     'expo-asset',
