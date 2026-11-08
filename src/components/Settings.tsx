@@ -49,15 +49,19 @@ export function SettingsRow({ title, description, value, toggle, onPress, loadin
       {value ? <Text style={styles.value}>{value}</Text> : null}
       {loading ? <ActivityIndicator color={colors.textMuted} /> : null}
       {toggle ? (
-        <Switch
-          value={toggle.value}
-          onValueChange={toggle.onChange}
-          disabled={toggle.disabled}
-          accessibilityLabel={title}
-          trackColor={{ true: colors.primary, false: colors.grey }}
-          ios_backgroundColor={colors.grey}
-          thumbColor={colors.eggWhite}
-        />
+        // Fixed box, centered in the row: iOS 26 draws its (bigger) switch from the top of whatever
+        // box it's given, which left every switch hugging the top of its row.
+        <View style={styles.switchBox}>
+          <Switch
+            value={toggle.value}
+            onValueChange={toggle.onChange}
+            disabled={toggle.disabled}
+            accessibilityLabel={title}
+            trackColor={{ true: colors.primary, false: colors.grey }}
+            ios_backgroundColor={colors.grey}
+            thumbColor={colors.eggWhite}
+          />
+        </View>
       ) : onPress && !loading ? (
         <Text style={styles.chevron}>›</Text>
       ) : null}
@@ -89,4 +93,5 @@ const styles = StyleSheet.create({
   description: { ...type.caption, fontSize: 12, lineHeight: 16, color: colors.textMuted },
   value: { ...type.body, fontSize: 14, color: colors.textMuted, textAlign: 'right', flexShrink: 1 },
   chevron: { ...type.title, color: colors.textMuted },
+  switchBox: { height: 31, minWidth: 51, justifyContent: 'center', alignItems: 'flex-end', alignSelf: 'center' },
 });
