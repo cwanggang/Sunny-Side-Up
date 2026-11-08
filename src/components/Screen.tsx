@@ -19,7 +19,14 @@ interface ScreenProps {
 export function Screen({ title, note, refreshing, onRefresh, children }: ScreenProps) {
   const navigation = useNavigation();
   useLayoutEffect(() => {
-    if (title) navigation.setOptions({ title });
+    // Header matches the page: sage background, navy bold title, no divider line.
+    navigation.setOptions({
+      ...(title ? { title } : {}),
+      headerStyle: { backgroundColor: colors.background },
+      headerTintColor: colors.text,
+      headerTitleStyle: { fontFamily: type.heading.fontFamily, fontWeight: '700', color: colors.text },
+      headerShadowVisible: false,
+    });
   }, [navigation, title]);
 
   return (
@@ -39,6 +46,6 @@ export function Screen({ title, note, refreshing, onRefresh, children }: ScreenP
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, gap: spacing.md },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
   note: { ...type.caption, color: colors.textMuted },
 });

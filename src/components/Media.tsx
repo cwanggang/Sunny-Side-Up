@@ -48,8 +48,8 @@ export function VoiceMemo({ path, uri }: { path?: string | null; uri?: string | 
 
 const styles = StyleSheet.create({
   photo: {
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    backgroundColor: colors.surfaceAlt,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -59,12 +59,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
   },
-  voiceLabel: { ...type.body, color: colors.text },
+  voiceLabel: { ...type.body, fontWeight: '700', color: colors.primaryText },
   pressed: { opacity: 0.7 },
   disabled: { opacity: 0.5 },
 });

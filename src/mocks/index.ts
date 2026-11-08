@@ -44,6 +44,9 @@ const consent: Consent = {
   location: true,
   health: false,
   auto_nudges: true,
+  notify_daily_photo: true,
+  notify_sunday: true,
+  notify_friend_posts: true,
   paused_until: null,
   updated_at: daysAgo(20),
 };
@@ -72,7 +75,7 @@ const feed: FeedItem[] = [
 ];
 
 const sundayPosts: Share[] = [
-  { id: 's1', circle_id: CIRCLE_ID, author_id: 'u-valerie', kind: 'sunday', period_key: '2026-W45', body: 'Finished my first 10k!', media_path: null, created_at: daysAgo(0.2) },
+  { id: 's1', circle_id: CIRCLE_ID, author_id: 'u-valerie', kind: 'sunday', period_key: '2026-W45', body: 'Finished my first 10k!', media_path: null, recipient_id: null, egg_style: null, created_at: daysAgo(0.2) },
 ];
 
 const moments: Moment[] = [

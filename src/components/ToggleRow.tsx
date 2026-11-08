@@ -1,6 +1,6 @@
 import { StyleSheet, Switch, Text, View } from 'react-native';
 
-import { colors, radii, spacing, type } from '@/theme';
+import { colors, radii, shadow, spacing, type } from '@/theme';
 
 interface ToggleRowProps {
   title: string;
@@ -18,7 +18,14 @@ export function ToggleRow({ title, description, value, onValueChange, disabled }
         <Text style={styles.title}>{title}</Text>
         {description ? <Text style={styles.description}>{description}</Text> : null}
       </View>
-      <Switch value={value} onValueChange={onValueChange} disabled={disabled} accessibilityLabel={title} />
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        disabled={disabled}
+        accessibilityLabel={title}
+        trackColor={{ true: colors.primary, false: colors.surfaceAlt }}
+        ios_backgroundColor={colors.surfaceAlt}
+      />
     </View>
   );
 }
@@ -30,7 +37,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
+    ...shadow.card,
   },
   text: { flex: 1, gap: spacing.xs },
   title: { ...type.body, fontWeight: '600', color: colors.text },

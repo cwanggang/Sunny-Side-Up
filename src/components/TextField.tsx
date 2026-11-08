@@ -18,14 +18,14 @@ export function TextField({ label, style, ...rest }: TextFieldProps) {
 
 const styles = StyleSheet.create({
   root: { gap: spacing.xs },
-  label: { ...type.caption, color: colors.textMuted },
+  label: { ...type.label, color: colors.textSecondary },
   input: {
     ...type.body,
     color: colors.text,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
   },
