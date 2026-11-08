@@ -3,7 +3,7 @@
 //   Sunny Sunday: you send one egg to your secret person; theirs opens only after you send yours.
 // Mock mode (EXPO_PUBLIC_USE_MOCKS) returns fixed sample data and no-op mutations.
 import { mediaPath, type EggStyle, type SundayStatus } from '@shared/api';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useUserId } from './auth';
 import { getSupabase } from './client';
@@ -149,31 +149,41 @@ const MOCK_EGG: SundayEgg = {
   theirs: null,
 };
 
+async function fetchSundayEgg(circleId: string): Promise<SundayEgg | null> {
+  if (USE_MOCKS) return MOCK_EGG;
+  const supabase = getSupabase();
+  const rows = unwrap(await supabase.rpc('sunday_status', { p_circle_id: circleId })) as SundayStatus[] | null;
+  const st = rows?.[0];
+  if (!st) return null;
+  const ids = [st.my_share_id, st.their_share_id].filter((x): x is string => !!x);
+  const shares = ids.length ? unwrap(await supabase.from('shares').select('*').in('id', ids)) : [];
+  return {
+    periodKey: st.period_key,
+    sendTo: st.send_to,
+    fromId: st.from_id,
+    iSent: st.i_sent,
+    theySent: st.they_sent,
+    prompt: st.prompt,
+    mine: shares.find((s) => s.id === st.my_share_id) ?? null,
+    theirs: shares.find((s) => s.id === st.their_share_id) ?? null,
+  };
+}
+
 /** This week's egg for me in this circle, or null before Sunday's pairs exist. */
 export function useSundayEgg(circleId: string): Query<SundayEgg | null> {
   return useQuery<SundayEgg | null, Error>({
     queryKey: sundayEggKey(circleId),
     enabled: !!circleId,
-    queryFn: async () => {
-      if (USE_MOCKS) return MOCK_EGG;
-      const supabase = getSupabase();
-      const rows = unwrap(await supabase.rpc('sunday_status', { p_circle_id: circleId })) as SundayStatus[] | null;
-      const st = rows?.[0];
-      if (!st) return null;
-      const ids = [st.my_share_id, st.their_share_id].filter((x): x is string => !!x);
-      const shares = ids.length ? unwrap(await supabase.from('shares').select('*').in('id', ids)) : [];
-      return {
-        periodKey: st.period_key,
-        sendTo: st.send_to,
-        fromId: st.from_id,
-        iSent: st.i_sent,
-        theySent: st.they_sent,
-        prompt: st.prompt,
-        mine: shares.find((s) => s.id === st.my_share_id) ?? null,
-        theirs: shares.find((s) => s.id === st.their_share_id) ?? null,
-      };
-    },
+    queryFn: () => fetchSundayEgg(circleId),
   });
+}
+
+/** The same, for every coop on the home screen (shares useSundayEgg's cache). Off on weekdays. */
+export function useSundayEggs(circleIds: string[], enabled: boolean): Record<string, SundayEgg | null | undefined> {
+  const results = useQueries({
+    queries: circleIds.map((id) => ({ queryKey: sundayEggKey(id), enabled, queryFn: () => fetchSundayEgg(id) })),
+  });
+  return Object.fromEntries(circleIds.map((id, i) => [id, results[i]?.data]));
 }
 
 export interface SendSundayEggInput {

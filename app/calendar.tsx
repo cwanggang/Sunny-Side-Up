@@ -1,11 +1,6 @@
-import { Screen } from '@/components';
-import { EventsView } from '@/components/EventsView';
+import { EventsScreen } from '@/components/EventsScreen';
 
-// Design v0.4 calendar across all my coops (Developer B).
+// The calendar across all my coops.
 export default function CalendarScreen() {
-  return (
-    <Screen title="calendar">
-      <EventsView circleId={null} />
-    </Screen>
-  );
+  return <EventsScreen circleId={null} />;
 }

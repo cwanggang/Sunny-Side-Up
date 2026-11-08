@@ -1,12 +1,25 @@
-// Design v0.3 egg art, drawn with plain Views (no SVG package, so no native re-install).
+// Egg art. Big eggs, fried eggs and the pan are the v0.5 prototype's own drawings (its art module,
+// shown through a DOM component). Small eggs (lists, avatars) still use the plain-View version so a
+// screen doesn't open a dozen web views; they switch to the exact drawing once react-native-svg is
+// installed on the next build-Mac visit.
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { Art } from '@/dom/art/art';
+import ArtView from '@/dom/ArtView';
 
 import { colors, eggSwatches, palette, radii, spacing, type, type EggSwatch, weight } from '@/theme';
 
 const swatchColor = (swatch?: string) => eggSwatches[(swatch as EggSwatch) ?? 'shell'] ?? eggSwatches.shell;
 
 export const EGG_SWATCHES = Object.keys(eggSwatches) as EggSwatch[];
-export const EGG_PATTERNS = ['none', 'dots', 'stripes', 'zigzag'] as const;
+/** The prototype's patterns ('none' is its 'plain'). */
+export const EGG_PATTERNS = ['none', 'dots', 'stripes', 'zigzag', 'checks', 'hearts', 'sparkles'] as const;
+
+/** Eggs at least this wide use the prototype's exact drawing. */
+export const EXACT_EGG_MIN = 80;
+
+const artDom = { scrollEnabled: false, style: { backgroundColor: 'transparent' } } as const;
+const artPattern = (pattern?: string) => (!pattern || pattern === 'none' ? 'plain' : pattern);
 
 /** A whole (decorated) egg. `text` is written across the middle, like "write on your egg". */
 export function Egg({
@@ -14,12 +27,29 @@ export function Egg({
   pattern = 'none',
   text,
   size = 120,
+  speckle,
 }: {
   swatch?: string;
   pattern?: string;
   text?: string | null;
   size?: number;
+  speckle?: boolean;
 }) {
+  if (size >= EXACT_EGG_MIN) {
+    return (
+      <View
+        style={{ width: size, height: size * 1.3 }}
+        accessibilityRole="image"
+        accessibilityLabel={text ? `egg that says ${text}` : 'egg'}
+      >
+        <ArtView html={Art.eggSVG({ swatch, pattern: artPattern(pattern), text: text ?? '', speckle })} dom={artDom} />
+      </View>
+    );
+  }
+  return <ViewEgg swatch={swatch} pattern={pattern} text={text} size={size} />;
+}
+
+function ViewEgg({ swatch, pattern, text, size }: { swatch: string; pattern: string; text?: string | null; size: number }) {
   const w = size;
   const h = size * 1.28;
   const dot = Math.max(5, size / 14);
@@ -58,8 +88,20 @@ export function Egg({
   );
 }
 
-/** A sunny-side-up egg: white blob + yolk, with an optional name under it. */
+/** A sunny-side-up egg (the prototype's drawing), with an optional name under it. */
 export function FriedEgg({ size = 120, label }: { size?: number; label?: string }) {
+  return (
+    <View style={styles.center}>
+      <View style={{ width: size, height: size * 0.86 }} accessibilityRole="image" accessibilityLabel="fried egg">
+        <ArtView html={Art.friedEgg({ w: 100, h: 86, r: 38, seed: 3, amp: 0.14 })} dom={artDom} />
+      </View>
+      {label ? <Text style={styles.name}>{label}</Text> : null}
+    </View>
+  );
+}
+
+/** The old plain-View fried egg (kept for tiny sizes). */
+export function ViewFriedEgg({ size = 120, label }: { size?: number; label?: string }) {
   return (
     <View style={styles.center}>
       <View style={{ width: size, height: size * 0.86, alignItems: 'center', justifyContent: 'center' }}>
@@ -82,17 +124,12 @@ export function FriedEgg({ size = 120, label }: { size?: number; label?: string 
   );
 }
 
-/** The frying pan ("still frying!"): you sent yours, waiting on theirs. */
+/** The frying pan ("still frying!"), the prototype's drawing: it rocks, sloshes, bubbles and steams. */
 export function Pan({ size = 130 }: { size?: number }) {
+  const w = size * 1.3;
   return (
-    <View style={[styles.center, { width: size * 1.3, height: size * 0.8 }]} accessibilityLabel="frying pan">
-      <View style={{ position: 'absolute', right: 0, width: size * 0.42, height: size * 0.1, borderRadius: size, backgroundColor: palette.pan }} />
-      <View style={{ width: size, height: size * 0.62, borderRadius: size, backgroundColor: palette.pan, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: size * 0.82, height: size * 0.48, borderRadius: size, backgroundColor: '#3E4559', alignItems: 'center', justifyContent: 'center' }}>
-          <FriedEgg size={size * 0.42} />
-        </View>
-      </View>
-      <Text style={styles.steam}>〰 〰 〰</Text>
+    <View style={{ width: w, height: (w * 130) / 170 }} accessibilityRole="image" accessibilityLabel="frying pan">
+      <ArtView html={`<div class="tD" style="position:absolute;inset:0">${Art.pan()}</div>`} dom={artDom} />
     </View>
   );
 }

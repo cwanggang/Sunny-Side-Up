@@ -1,13 +1,15 @@
+import "@/dom/webviewGuard";
+
 import {
   Lexend_400Regular,
   Lexend_500Medium,
   Lexend_600SemiBold,
   Lexend_700Bold,
   useFonts,
-} from '@expo-google-fonts/lexend';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+} from "@expo-google-fonts/lexend";
+import { Stack } from "expo-router/js-stack";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
 
 import {
   ApiProvider,
@@ -17,7 +19,10 @@ import {
   useReportAppOpen,
   useSession,
   useSignalSync,
-} from '@/api';
+} from "@/api";
+import { LoadingEgg } from "@/components";
+import { transitions } from "@/navigation/transitions";
+import { colors } from "@/theme";
 
 // Keep the native splash up until the stored session is restored (A1.1) and Lexend is loaded (A5.1).
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -37,7 +42,12 @@ function RootStack() {
   const { session, loading: sessionLoading } = useSession();
   const signedIn = !!session;
   // A5.1: the prototype's font. If loading fails, screens fall back to the system font.
-  const [fontsLoaded, fontError] = useFonts({ Lexend_400Regular, Lexend_500Medium, Lexend_600SemiBold, Lexend_700Bold });
+  const [fontsLoaded, fontError] = useFonts({
+    Lexend_400Regular,
+    Lexend_500Medium,
+    Lexend_600SemiBold,
+    Lexend_700Bold,
+  });
   const loading = sessionLoading || (!fontsLoaded && !fontError);
 
   // A1.4: own `notifications` rows → local notifications (no-op while signed out).
@@ -57,44 +67,68 @@ function RootStack() {
 
   if (loading) return null;
 
+  // A5: JavaScript stack so every screen uses the prototype's own transitions (push by default),
+  // with the prototype's loading egg over it on launch.
   return (
-    <Stack>
-      <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="(auth)/sign-in" options={{ headerShown: false }} />
-      </Stack.Protected>
+    <>
+      <Stack
+        screenOptions={{
+          ...transitions.push,
+          cardStyle: { backgroundColor: colors.background },
+        }}
+      >
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen
+            name="(auth)/sign-in"
+            options={{ headerShown: false }}
+          />
+        </Stack.Protected>
 
-      <Stack.Protected guard={signedIn}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/consent" />
-        <Stack.Screen name="(auth)/profile-setup" />
-        <Stack.Screen name="circle/[id]/index" />
-        <Stack.Screen name="circle/[id]/feed" />
-        <Stack.Screen name="circle/[id]/compose" />
-        <Stack.Screen name="circle/[id]/sunday" />
-        <Stack.Screen name="circle/[id]/spotlight" />
-        <Stack.Screen name="circle/[id]/birthdays" />
-        <Stack.Screen name="circle/[id]/hangouts" />
-        <Stack.Screen name="(dev)/demo" />
-        {/* Design v0.4 screens (Developer B) */}
-        <Stack.Screen name="profile" />
-        <Stack.Screen name="calendar" />
-        <Stack.Screen name="coop/new" />
-        <Stack.Screen name="coop/join" />
-        <Stack.Screen name="circle/[id]/coop" />
-        <Stack.Screen name="circle/[id]/events" />
-        <Stack.Screen name="circle/[id]/gallery" />
-        <Stack.Screen name="circle/[id]/daily" />
-        <Stack.Screen name="event/[eventId]" />
-        <Stack.Screen name="event/new" />
-        <Stack.Screen name="member/[userId]" />
-        {/* Design v0.5 (A5 handoff to Developer B) */}
-        <Stack.Screen name="camera" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
-        {/* A5 temporary: DOM component check */}
-        <Stack.Screen name="dom-check" />
-      </Stack.Protected>
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="index" />
+          <Stack.Screen
+            name="(tabs)"
+            options={{ ...transitions.fade, headerShown: false }}
+          />
+          <Stack.Screen name="(auth)/consent" />
+          <Stack.Screen name="(auth)/profile-setup" />
+          <Stack.Screen name="circle/[id]/index" />
+          <Stack.Screen name="circle/[id]/feed" />
+          <Stack.Screen name="circle/[id]/compose" />
+          <Stack.Screen name="circle/[id]/sunday" />
+        <Stack.Screen name="circle/[id]/respond" options={{ headerShown: false }} />
+        <Stack.Screen name="circle/[id]/decorate" options={{ headerShown: false }} />
+        <Stack.Screen name="circle/[id]/reveal" options={{ ...transitions.fade, headerShown: false }} />
+        {/* A5: egg war (design v0.5 "play!") */}
+        <Stack.Screen name="circle/[id]/play" options={{ headerShown: false }} />
+        <Stack.Screen name="circle/[id]/war" options={{ headerShown: false }} />
+        <Stack.Screen name="circle/[id]/snipe" options={{ headerShown: false }} />
+          <Stack.Screen name="circle/[id]/spotlight" />
+          <Stack.Screen name="circle/[id]/birthdays" />
+          <Stack.Screen name="circle/[id]/hangouts" />
+          <Stack.Screen name="(dev)/demo" />
+          {/* Design v0.4 screens (Developer B) */}
+          <Stack.Screen name="profile" options={{ headerShown: false }} />
+          <Stack.Screen name="calendar" options={{ headerShown: false }} />
+          <Stack.Screen name="coop/new" options={{ headerShown: false }} />
+          <Stack.Screen name="circle/[id]/coop" options={{ headerShown: false }} />
+          <Stack.Screen name="circle/[id]/events" options={{ headerShown: false }} />
+          <Stack.Screen name="circle/[id]/gallery" options={{ headerShown: false }} />
+          <Stack.Screen name="circle/[id]/daily" options={{ headerShown: false }} />
+          <Stack.Screen name="event/[eventId]" options={{ headerShown: false }} />
+          <Stack.Screen name="event/new" options={{ ...transitions.rise, headerShown: false }} />
+          <Stack.Screen name="member/[userId]" options={{ ...transitions.fade, headerShown: false }} />
+          <Stack.Screen name="egg/[interactionId]" options={{ ...transitions.fade, headerShown: false }} />
+          {/* Design v0.5 (A5 handoff to Developer B) */}
+          <Stack.Screen
+            name="camera"
+            options={{ ...transitions.none, headerShown: false }}
+          />
+        </Stack.Protected>
 
-      <Stack.Screen name="join/[code]" />
-    </Stack>
+        <Stack.Screen name="join/[code]" />
+      </Stack>
+      <LoadingEgg />
+    </>
   );
 }

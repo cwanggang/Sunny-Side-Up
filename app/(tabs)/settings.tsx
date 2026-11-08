@@ -9,11 +9,13 @@ import {
   setHomeLocation,
   signOut,
   uploadSignalsNow,
+  useChickPrefs,
   useConsent,
   useDeleteAccount,
   useMyFullProfile,
   usePause,
   useSession,
+  useSetChickPrefs,
   useSignalStatus,
   useUpdateConsent,
   useWhatTheAppSaw,
@@ -57,6 +59,8 @@ export default function SettingsScreen() {
   const saw = useWhatTheAppSaw();
   const pause = usePause();
   const deleteAccount = useDeleteAccount();
+  const chick = useChickPrefs();
+  const setChick = useSetChickPrefs();
 
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -148,6 +152,11 @@ export default function SettingsScreen() {
             <SettingsRow title="daily photo reminder" toggle={toggle('notify_daily_photo', c)} />
             <SettingsRow title="sunny sunday reminder" toggle={toggle('notify_sunday', c)} />
             <SettingsRow title="when friends post" toggle={toggle('notify_friend_posts', c)} />
+            <SettingsRow
+              title="chick nudges"
+              description="a chick drops by when someone could use an egg from you"
+              toggle={{ value: chick.data?.on ?? true, onChange: (on) => setChick.mutate({ on }) }}
+            />
           </SettingsGroup>
 
           <SettingsGroup title="privacy">
@@ -252,7 +261,6 @@ export default function SettingsScreen() {
 
       <SettingsGroup title="about">
         <SettingsRow title="sunny side up" value="hackathon build" />
-        <SettingsRow title="egg check (dom test)" onPress={() => router.push('/dom-check')} />
       </SettingsGroup>
     </Screen>
   );

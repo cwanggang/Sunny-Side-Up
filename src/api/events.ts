@@ -9,6 +9,7 @@ import { getSupabase } from './client';
 import { USE_MOCKS } from './config';
 import { coopsKey, eggOf, type EggLook } from './coops';
 import { check, unwrap } from './errors';
+import { channelName } from './realtime';
 import type { Mutation, Query } from './surface';
 
 type Tables = Database['public']['Tables'];
@@ -114,7 +115,7 @@ export function useEventMessages(eventId: string): Query<EventMessage[]> {
     if (!eventId || USE_MOCKS) return;
     const supabase = getSupabase();
     const channel = supabase
-      .channel(`event-chat:${eventId}`)
+      .channel(channelName(`event-chat:${eventId}`))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_messages', filter: `event_id=eq.${eventId}` }, () =>
         queryClient.invalidateQueries({ queryKey: [...eventKey(eventId), 'messages'] }),
       )

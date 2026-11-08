@@ -9,6 +9,7 @@ import { configureForegroundNotifications, ensureNotificationPermission, showLoc
 
 import { useUserId } from './auth';
 import { getSupabase } from './client';
+import { channelName } from './realtime';
 import type { AppNotification } from './types';
 
 const MAX_KEPT = 50;
@@ -69,7 +70,7 @@ export function useNotifications(): { unread: AppNotification[] } {
       else await deliver(data);
     };
 
-    const channel = supabase.channel(`notifications:${userId}`);
+    const channel = supabase.channel(channelName(`notifications:${userId}`));
 
     (async () => {
       configureForegroundNotifications();

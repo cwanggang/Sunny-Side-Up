@@ -106,6 +106,21 @@ export function useCreateCoop(): Mutation<CreateCoopInput, Tables['circles']['Ro
   });
 }
 
+/** Changes the coop's photo (the pencil on the home card). */
+export function useSetCoopCover(): Mutation<{ circleId: string; uri: string }> {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, { circleId: string; uri: string }>({
+    mutationFn: async ({ circleId, uri }) => {
+      const path = `${circleId}/cover-${newId()}.jpg`;
+      await uploadFile(path, uri, 'image/jpeg');
+      check(await getSupabase().from('circles').update({ cover_path: path }).eq('id', circleId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: coopsKey });
+    },
+  });
+}
+
 export function useJoinCoop(): Mutation<{ code: string }, Tables['circles']['Row']> {
   const queryClient = useQueryClient();
   return useMutation<Tables['circles']['Row'], Error, { code: string }>({
