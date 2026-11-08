@@ -124,16 +124,15 @@ We have **no paid Apple Developer account**. The app is compiled on a Mac with X
 - [ ] **P0.11** Branch names: `a/<phase>` and `b/<phase>`.
 - [ ] **P0.12** Give the designers the screen list (section 4.4) so the designs cover every screen, and agree on the H+24 handoff.
 - [x] **P0.13** Visibility of directed interactions: when `recipient_id` is set (an egg, photo, voice memo, or text to one person), **only the sender and the recipient** can see it. Whole-circle interactions (`recipient_id` null) are visible to all members. *Contract change, see §4.*
-- [x] **P0.14** Demo cast (real phone accounts, all in one demo circle). The drift seed (B4.8) backfills history for these accounts, looked up by email:
+- [x] **P0.14** Demo cast (real phone accounts, all in one demo circle; **3 people since 2026-11-08**, the free Personal Team's phone limit). The drift seed (B4.8) backfills history for these accounts, looked up by email:
 
   | Person | Email | Demo role |
   | --- | --- | --- |
   | Ella Ha | ella7.ha@gmail.com | **Quiet member** (engagement drops over the last 3 days) |
-  | Valerie Wu | val311297@gmail.com | **Nudge recipient** ("haven't caught up with Ella lately"). Her phone keeps the app open during the demo (section 3.0) |
+  | Jocelyn | river.jossy7@gmail.com | **Nudge recipient** ("haven't caught up with Ella lately"). Her phone keeps the app open during the demo (section 3.0) |
   | Caden Wang | caden190wang@gmail.com | Circle member |
-  | Johnathon Wu | gamecoder04@gmail.com | Circle member |
 
-  Each person signs up in the app with this email and a password (Phase 1) before B4.8 runs. For the demo, the nudge engine must pick Valerie for Ella (B4.8 seeds the rotation, or `?demo=true` targets her).
+  Each person signs up in the app with this email and a password (Phase 1) before B4.8 runs. For the demo, the nudge engine must pick Jocelyn for Ella (B4.8 seeds the rotation, or `?demo=true` targets her).
 
 ### 3.3 Scaffold (Developer A, ~60 min, H+0 to H+1)
 

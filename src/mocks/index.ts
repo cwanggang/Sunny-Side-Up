@@ -51,9 +51,6 @@ const consent: Consent = {
   notify_sunday: true,
   notify_friend_posts: true,
   paused_until: null,
-  notify_daily_photo: true,
-  notify_friend_posts: true,
-  notify_sunday: true,
   updated_at: daysAgo(20),
 };
 
