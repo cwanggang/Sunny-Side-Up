@@ -425,7 +425,7 @@ Tick only your own role's list (this keeps merges conflict-free). Commit the tic
 
 ### Developer A
 
-- [x] S1 · [x] S2 · [x] S3 · [ ] S4 · [x] S5 · [x] S6
+- [x] S1 · [x] S2 · [x] S3 · [x] S4 · [x] S5 · [x] S6
 - [x] A0.1 · [x] A0.2 · [x] A0.3
 - [x] A1.1 · [x] A1.2 · [x] A1.3 · [x] A1.4 · [x] A1.5
 - [x] A2.1 · [x] A2.2 · [x] A2.3 · [x] A2.4 · [x] A2.5 · [x] A2.6
