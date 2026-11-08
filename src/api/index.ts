@@ -80,6 +80,7 @@ export {
   useSendSundayEgg,
   useShareReactions,
   useSundayEgg,
+  useSundayEggs,
   useToggleShareReaction,
   type EggStyle,
   type ShareReaction,
@@ -105,6 +106,7 @@ export {
   useMyFullProfile,
   usePeople,
   useSaveProfile,
+  useSetCoopCover,
   type CoopSummary,
   type DailyDay,
   type EggLook,
@@ -138,5 +140,42 @@ export {
   type EventRow,
   type EventSummary,
 } from './events';
+export { localDate } from './dates';
+export { newId as newLocalId } from './ids';
+export { LiveCamera, type LiveCameraHandle } from '@/native/camera';
 export { ApiProvider } from './provider';
 export type * from './types';
+// Egg war (design v0.5 "play!").
+export {
+  useCancelEggWar,
+  useDeleteSnipe,
+  useDemoSkipEggWar,
+  useEggWar,
+  useEggWars,
+  useEggWarSnipes,
+  useJoinEggWar,
+  useLeaveEggWar,
+  usePostSnipe,
+  useStartEggWar,
+  useVoteEggWar,
+  type EggWarChoice,
+  type EggWarStatus,
+  type Snipe,
+} from './eggWar';
+export { localImageDataUrl, useMediaUrlMap, useMediaUrls } from './storage';
+export { useSpotlights } from './rhythm';
+// The nudge chick (prototype flow 11): what it brings to the home screen.
+export {
+  getPendingCarry,
+  setPendingCarry,
+  useChickMail,
+  useChickNudge,
+  useChickPrefs,
+  useFriendEgg,
+  useOpenChickEgg,
+  useSendChickEgg,
+  useSetChickPrefs,
+  type ChickEgg,
+  type ChickPrefs,
+  type PendingCarry,
+} from './chick';

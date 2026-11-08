@@ -9,6 +9,7 @@ import { useUserId } from './auth';
 import { getSupabase } from './client';
 import { check, unwrap } from './errors';
 import { newId } from './ids';
+import { channelName } from './realtime';
 import { uploadFile } from './storage';
 import type { Mutation, Query } from './surface';
 import type { FeedItem, InteractionKind, SendTarget } from './types';
@@ -31,7 +32,7 @@ export function useFeed(circleId: string): Query<FeedItem[]> {
 
     // RLS applies to Realtime too, so only interactions I'm allowed to see arrive here.
     const channel = supabase
-      .channel(`feed:${circleId}`)
+      .channel(channelName(`feed:${circleId}`))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'interactions', filter: `circle_id=eq.${circleId}` },

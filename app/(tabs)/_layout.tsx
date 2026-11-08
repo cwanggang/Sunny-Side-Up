@@ -1,5 +1,6 @@
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/js-stack';
 
+import { transitions } from '@/navigation/transitions';
 import { colors } from '@/theme';
 
 // Design v0.5 (A5, handed to Developer B): no tab bar. Home ("my coops" / "sunny sunday!") has a
@@ -10,7 +11,7 @@ export const unstable_settings = { initialRouteName: 'circles' };
 
 export default function HomeLayout() {
   return (
-    <Stack screenOptions={{ contentStyle: { backgroundColor: colors.background } }}>
+    <Stack screenOptions={{ ...transitions.push, cardStyle: { backgroundColor: colors.background } }}>
       <Stack.Screen name="circles" options={{ headerShown: false, title: 'my coops' }} />
       <Stack.Screen name="nudges" />
       <Stack.Screen name="settings" />

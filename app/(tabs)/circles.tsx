@@ -1,152 +1,242 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useCoops, useEvents, usePeople, useSession } from '@/api';
-import { Body } from '@/components';
-import { Avatar, EggButton } from '@/components/Coop';
-import { FriedEgg } from '@/components/Egg';
-import { BottomEgg, CoopList, CoopStack, CornerMenu, SundayTile, nextEventByCoop, type MenuItem } from '@/components/Home';
-import { colors, palette, spacing, type, weight } from '@/theme';
+import {
+  demoKeyConfigured,
+  getPendingCarry,
+  isPast,
+  setPendingCarry,
+  useChickMail,
+  useChickNudge,
+  useChickPrefs,
+  useCoops,
+  useEggWars,
+  useEvents,
+  useJoinCoop,
+  useLeaveCoop,
+  useMediaUrlMap,
+  usePeople,
+  usePhotoPicker,
+  useSession,
+  useSetChickPrefs,
+  useSetCoopCover,
+  useSpotlights,
+  useSundayEggs,
+  eggStyleOf,
+  type EventSummary,
+  type PendingCarry,
+} from '@/api';
+import { useLoadingEggDone } from '@/components/LoadingEgg';
+import { sundayUi } from '@/components/SundayArt';
+import { afterReply } from '@/dom/defer';
+import HomeView, { type HomeCoopProp, type HomeMode, type SundayAct } from '@/dom/HomeView';
+import { colors } from '@/theme';
 
-const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-const kicker = (d: Date) => `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`;
+const DOW = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const timeOf = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }).toLowerCase();
 
-// Design v0.5 home (A5.2, handed to Developer B): "my coops" on weekdays, "sunny sunday!" on
-// Sundays (switch from the corner menu). Each coop is a stack of cards: coop photo + whose day,
-// today's photo, up next. The fried egg at the bottom opens the camera on your day.
+function nextEventByCoop(events: EventSummary[] | undefined): Map<string, EventSummary> {
+  const m = new Map<string, EventSummary>();
+  for (const e of [...(events ?? [])].sort((a, b) => (a.starts_at < b.starts_at ? -1 : 1))) {
+    if (!isPast(e) && !m.has(e.circle_id)) m.set(e.circle_id, e);
+  }
+  return m;
+}
+
+// The home screen: the prototype's whole page in one DOM component (src/dom/HomeView.tsx). This file only
+// gathers the data and carries out the actions.
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { session } = useSession();
-  const myId = session?.user.id ?? null;
+  const myId = session?.user.id ?? '';
   const coops = useCoops();
   const people = usePeople();
   const events = useEvents(null);
-  const [mode, setMode] = useState<'weekday' | 'sunday'>(() => (new Date().getDay() === 0 ? 'sunday' : 'weekday'));
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [listOpen, setListOpen] = useState(false);
+  const list = useMemo(() => coops.data ?? [], [coops.data]);
+  const ids = useMemo(() => list.map((c) => c.id), [list]);
+
+  const [mode, setMode] = useState<HomeMode>(() => (new Date().getDay() === 0 ? 'sunday' : 'weekday'));
+  const [focused, setFocused] = useState(true);
+  const splashDone = useLoadingEggDone();
+  const [carry, setCarry] = useState<PendingCarry | null>(null);
+  const [, setCrackTick] = useState(0);
+
+  const sundays = useSundayEggs(ids, mode === 'sunday');
+  const spotlights = useSpotlights(ids);
+  const wars = useEggWars(ids);
+  const pick = usePhotoPicker();
+  const setCover = useSetCoopCover();
+  const join = useJoinCoop();
+  const leave = useLeaveCoop();
+
+  const chickPrefs = useChickPrefs();
+  const setChick = useSetChickPrefs();
+  const nudge = useChickNudge();
+  const mail = useChickMail();
+
+  useFocusEffect(
+    useCallback(() => {
+      setFocused(true);
+      void coops.refetch();
+      void events.refetch();
+      setCarry(getPendingCarry());
+      return () => setFocused(false);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   const peopleById = people.data?.people;
-  const me = myId ? peopleById?.get(myId) : undefined;
-  const nameOf = (id: string | null | undefined) =>
-    !id ? 'someone' : id === myId ? 'you' : (peopleById?.get(id)?.username ?? 'a friend');
-  const list = coops.data ?? [];
-  const nextEvents = nextEventByCoop(events.data);
-  const myDays = list.filter((c) => c.today_user_id === myId);
-  const left = myDays.filter((c) => !c.today_posted);
-  const sunday = mode === 'sunday';
-
-  const refresh = () => {
-    void coops.refetch();
-    void events.refetch();
+  const lastPhoto = (id: string) => {
+    const posts = spotlights[id]?.posts ?? [];
+    return [...posts].reverse().find((p) => p.media_path) ?? posts[posts.length - 1] ?? null;
   };
 
-  const menu: MenuItem[] = [
-    { key: 'weekday', icon: '🏠', label: 'my coops', current: !sunday, onPress: () => setMode('weekday') },
-    { key: 'sunday', icon: '☀️', label: 'sunny sunday', current: sunday, onPress: () => setMode('sunday') },
-    { key: 'calendar', icon: '📅', label: 'calendar', onPress: () => router.push('/calendar') },
-    { key: 'nudges', icon: '💛', label: 'nudges', onPress: () => router.push('/nudges') },
-    { key: 'settings', icon: '⚙️', label: 'settings', onPress: () => router.push('/settings') },
-    { key: 'hr1', icon: '', label: '', onPress: () => {} },
-    { key: 'demo', icon: '🎬', label: 'demo controls', onPress: () => router.push('/demo') },
-  ];
+  const urls = useMediaUrlMap([
+    ...list.map((c) => c.cover_path),
+    ...ids.map((id) => lastPhoto(id)?.media_path),
+    ...[...(peopleById?.values() ?? [])].map((p) => p.avatarPath),
+  ]);
 
-  function onEgg() {
-    if (left.length) return router.push('/camera');
-    if (myDays.length) return Alert.alert('all done today', "you've posted everywhere it's your day. nice!");
-    const next = list.find((c) => c.today_user_id);
-    Alert.alert('not your day yet', next ? `today is ${nameOf(next.today_user_id)}'s day in ${next.name}. react to their photo!` : 'no one is up today.');
-  }
+  const domPeople = useMemo(() => {
+    const out: Record<string, { id: string; username: string; name: string; photoUrl: string | null }> = {};
+    peopleById?.forEach((p) => {
+      out[p.id] = { id: p.id, username: p.username, name: p.name, photoUrl: p.avatarPath ? (urls[p.avatarPath] ?? null) : null };
+    });
+    return out;
+  }, [peopleById, urls]);
+
+  const friend = (id: string) => domPeople[id] ?? { id, username: 'a friend', photoUrl: null };
+
+  const nextEvents = nextEventByCoop(events.data);
+  const domCoops: HomeCoopProp[] = list.map((c) => {
+    const photo = lastPhoto(c.id);
+    const e = nextEvents.get(c.id);
+    const w = wars[c.id]?.war;
+    const start = e ? new Date(e.starts_at) : null;
+    const egg = sundays[c.id];
+    const crackKey = egg ? `${c.id}:${egg.periodKey}` : '';
+    const state = !egg ? 'N' : !egg.iSent ? (sundayUi.isCracked(crackKey) ? 'B' : 'A') : !egg.theirs ? 'D' : sundayUi.isOpened(egg.theirs.id) ? 'E' : 'C';
+    const partnerId = !egg ? null : state === 'A' || state === 'B' ? egg.sendTo : (egg.fromId ?? egg.sendTo);
+    const partner = partnerId ? domPeople[partnerId] : null;
+    return {
+      id: c.id,
+      name: c.name,
+      members: c.members,
+      today: c.today_user_id,
+      coverUrl: c.cover_path ? (urls[c.cover_path] ?? null) : null,
+      photo: photo ? { url: photo.media_path ? (urls[photo.media_path] ?? null) : null, by: photo.author_id, time: timeOf(photo.created_at) } : null,
+      event:
+        e && start
+          ? {
+              id: e.id,
+              title: e.title,
+              day: start.getDate(),
+              dow: DOW[start.getDay()],
+              mon: MON[start.getMonth()],
+              when: `${timeOf(e.starts_at)}${e.location ? ` at ${e.location}` : ''}`,
+              going: e.people.filter((p) => !p.opted_out).map((p) => p.user_id),
+            }
+          : null,
+      war:
+        w && (w.state === 'vote' || w.state === 'live')
+          ? { state: w.state, label: w.state === 'live' ? `egg war in ${c.name}` : `egg war vote in ${c.name}` }
+          : null,
+      sunday: {
+        state,
+        partner: partner ? { id: partner.id, name: partner.username, photoUrl: partner.photoUrl } : null,
+        theirs: egg?.theirs ? { ...eggStyleOf(egg.theirs), text: egg.theirs.body } : null,
+      },
+    };
+  });
+
+  const myDays = list.filter((c) => c.today_user_id === myId);
+  const left = myDays.filter((c) => !c.today_posted);
+  const someoneUp = list.find((c) => c.today_user_id);
+
+  const bottom = left.length
+    ? { label: "it's your day!", aria: "it's your day: add today's photo", ready: true, tip: '' }
+    : myDays.length
+      ? { label: 'all done today', aria: 'all done for today', ready: false, tip: "you've posted everywhere today. nice!" }
+      : {
+          label: 'not your day',
+          aria: 'not your day',
+          ready: false,
+          tip: someoneUp ? `today is ${friend(someoneUp.today_user_id).username}'s day in ${someoneUp.name}` : 'no one is up today',
+        };
+
+  const n = nudge.current;
+  const domNudge = n ? { id: n.id, friend: friend(n.aboutUserId), message: n.message } : null;
+  const l = nudge.latest;
+  const domLatest = l ? { id: l.id, friend: friend(l.aboutUserId), message: l.message } : null;
+  const m = mail[0];
+  const domMail = m ? { id: m.id, friend: friend(m.sender_id), egg: { ...(peopleById?.get(m.sender_id)?.egg ?? { swatch: 'butter', pattern: 'dots' }), text: m.body } } : null;
+
+  const me = domPeople[myId] ?? null;
 
   return (
-    <View style={styles.root}>
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 64, paddingBottom: sunday ? spacing.xxl + insets.bottom : 200 }]}
-        refreshControl={<RefreshControl refreshing={coops.isRefetching} onRefresh={refresh} />}
-      >
-        <Pressable accessibilityRole="button" accessibilityLabel="show my coops" onPress={() => setListOpen(true)} style={styles.titleBtn}>
-          <Text style={styles.title}>{sunday ? 'sunny sunday!' : 'my coops'}</Text>
-          <Text style={styles.chev}>⌄</Text>
-        </Pressable>
-        <Text style={styles.kicker}>{kicker(new Date())}</Text>
-
-        {coops.error ? <Body error>couldn&apos;t load your coops: {coops.error.message}</Body> : null}
-        {coops.isPending ? <Body muted>cracking eggs…</Body> : null}
-        {coops.data?.length === 0 ? (
-          <View style={styles.empty}>
-            <FriedEgg size={120} />
-            <Body muted>no coops yet. make one for your people, or join with a code.</Body>
-            <EggButton label="add a coop" onPress={() => router.push('/coop/new')} />
-            <Pressable onPress={() => router.push('/coop/join')}>
-              <Text style={styles.link}>join with a code</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
-        {sunday ? (
-          <View style={styles.tiles}>
-            {list.map((c) => (
-              <SundayTile key={c.id} coop={c} nameOf={nameOf} />
-            ))}
-          </View>
-        ) : (
-          list.map((c) => (
-            <CoopStack key={c.id} coop={c} myId={myId} nameOf={nameOf} peopleById={peopleById} nextEvent={nextEvents.get(c.id)} />
-          ))
-        )}
-      </ScrollView>
-
-      {!sunday && list.length > 0 ? (
-        <BottomEgg
-          ready={left.length > 0}
-          label={left.length ? "it's your day!" : myDays.length ? 'all done today' : 'not your day'}
-          onPress={onEgg}
-        />
-      ) : null}
-
-      {/* corners: menu egg (left), you (right) */}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="open menu"
-        onPress={() => setMenuOpen(true)}
-        style={[styles.cornerL, { top: insets.top + 4 }]}
-      >
-        <View style={styles.cornerWhite}>
-          <View style={styles.cornerYolk} />
-        </View>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="your profile"
-        onPress={() => router.push('/profile')}
-        style={[styles.cornerR, { top: insets.top + 4 }]}
-      >
-        <View style={styles.cornerAvatar}>{me ? <Avatar person={me} size={40} /> : null}</View>
-        <Text style={styles.handle}>@{me?.username ?? '…'}</Text>
-      </Pressable>
-
-      <CornerMenu open={menuOpen} onClose={() => setMenuOpen(false)} items={menu} top={insets.top + 4} />
-      <CoopList open={listOpen} onClose={() => setListOpen(false)} coops={list} top={insets.top + 110} nameOf={nameOf} myId={myId} />
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <HomeView
+        top={insets.top}
+        me={me}
+        people={domPeople}
+        coops={domCoops}
+        loaded={!coops.isPending && splashDone}
+        mode={mode}
+        focused={focused && splashDone}
+        bottom={bottom}
+        demo={demoKeyConfigured}
+        chick={{ on: chickPrefs.data?.on ?? true, nudge: domNudge, latest: domLatest, mail: domMail, carry }}
+        onMode={async (x) => setMode(x)}
+        onCoop={async (id) => router.push(`/circle/${id}/coop`)}
+        onEvents={async (id) => (id ? router.push(`/circle/${id}/events`) : router.push('/calendar'))}
+        onEvent={async (id) => router.push(`/event/${id}`)}
+        onWar={async (id) => router.push(`/circle/${id}/war`)}
+        onCover={async (id) => {
+          const uri = await pick();
+          if (!uri) return null;
+          await setCover.mutateAsync({ circleId: id, uri });
+          return '';
+        }}
+        onProfile={async () => router.push('/profile')}
+        onRoute={async (to) => router.push(`/${to}` as never)}
+        onCamera={async () => router.push('/camera')}
+        onJoin={async (code) => {
+          try {
+            const c = await join.mutateAsync({ code });
+            afterReply(() => router.push(`/circle/${c.id}/coop?welcome=1`));
+            return null;
+          } catch (e) {
+            return e instanceof Error ? e.message : "couldn't join that coop";
+          }
+        }}
+        onLeave={async (id) => leave.mutate({ circleId: id })}
+        onSunday={async (id, act: SundayAct) => {
+          if (act === 'cracked') {
+            const egg = sundays[id];
+            if (egg) sundayUi.markCracked(`${id}:${egg.periodKey}`);
+            setCrackTick((t) => t + 1);
+          } else if (act === 'respond') router.push(`/circle/${id}/respond?from=home`);
+          else if (act === 'open') router.push(`/circle/${id}/reveal`);
+          else router.push(`/circle/${id}/reveal?again=1`);
+        }}
+        onChickSend={async (x) => {
+          const full = nudge.current?.id === x.id ? nudge.current : nudge.latest;
+          if (!full) return;
+          router.push(`/circle/${full.circleId}/respond?to=${full.aboutUserId}&nudge=${full.id}`);
+        }}
+        onChickOpen={async (x) => router.push(`/egg/${x.id}`)}
+        onChickDismiss={async (x) => {
+          setChick.mutate({ dismissed: [...(chickPrefs.data?.dismissed ?? []), x.id] });
+        }}
+        onChickOff={async () => setChick.mutate({ on: false })}
+        onCarryDone={async () => {
+          setPendingCarry(null);
+        }}
+        dom={{ scrollEnabled: false, contentInsetAdjustmentBehavior: 'never', style: { flex: 1, backgroundColor: colors.background } }}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  content: { paddingHorizontal: spacing.lg, gap: spacing.sm, alignItems: 'stretch' },
-  titleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
-  title: { ...type.display, fontSize: 38, color: colors.text, textAlign: 'center' },
-  chev: { ...type.title, color: colors.text, marginTop: -10 },
-  kicker: { ...type.label, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.lg },
-  empty: { alignItems: 'center', gap: spacing.md, marginTop: spacing.xl },
-  link: { ...type.caption, ...weight('700'), color: colors.textSecondary, textDecorationLine: 'underline' },
-  tiles: { gap: spacing.md },
-  cornerL: { position: 'absolute', left: spacing.md },
-  cornerWhite: { width: 64, height: 56, borderRadius: 30, backgroundColor: colors.eggWhite, borderWidth: 2.5, borderColor: palette.ink, alignItems: 'center', justifyContent: 'center' },
-  cornerYolk: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.yolk, borderWidth: 2.5, borderColor: '#A8721F' },
-  cornerR: { position: 'absolute', right: spacing.md, alignItems: 'center', gap: 2 },
-  cornerAvatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.eggWhite, borderWidth: 2.5, borderColor: palette.ink, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  handle: { ...type.caption, ...weight('700'), color: colors.text, backgroundColor: colors.eggWhite, paddingHorizontal: spacing.sm, borderRadius: 999, overflow: 'hidden' },
-});

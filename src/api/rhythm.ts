@@ -1,7 +1,7 @@
 // A3.1–A3.3: Sunday share, spotlight, birthdays and moments. The server (B3.1–B3.3) opens the
 // Sunday share, rotates the spotlight and sends the reminders; this file reads and posts.
 import { mediaPath } from '@shared/api';
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
 import { useUserId } from './auth';
 import { fetchCircleMembers, membersKey } from './circles';
@@ -102,36 +102,47 @@ export function usePostShare(): Mutation<PostShareInput> {
 
 // ---------- Spotlight (A3.2) ----------
 
+async function fetchSpotlight(queryClient: QueryClient, circleId: string): Promise<Spotlight> {
+  const supabase = getSupabase();
+  const today = localDate();
+  const [days, posts, people] = await Promise.all([
+    supabase
+      .from('spotlight_days')
+      .select('day, user_id')
+      .eq('circle_id', circleId)
+      .gte('day', today)
+      .lte('day', addDays(today, 6))
+      .order('day'),
+    supabase
+      .from('shares')
+      .select('*')
+      .eq('circle_id', circleId)
+      .eq('kind', 'spotlight')
+      .eq('period_key', today)
+      .order('created_at'),
+    members(queryClient, circleId),
+  ]);
+  const nameOf = (id: string) => people.find((m) => m.userId === id)?.displayName ?? 'Friend';
+  const week = unwrap(days).map((d) => ({ day: d.day, userId: d.user_id, displayName: nameOf(d.user_id) }));
+  return { today: week.find((d) => d.day === today) ?? null, week, posts: unwrap(posts) };
+}
+
 export function useSpotlight(circleId: string): Query<Spotlight> {
   const queryClient = useQueryClient();
   return useQuery<Spotlight, Error>({
     queryKey: spotlightKey(circleId),
     enabled: !!circleId,
-    queryFn: async () => {
-      const supabase = getSupabase();
-      const today = localDate();
-      const [days, posts, people] = await Promise.all([
-        supabase
-          .from('spotlight_days')
-          .select('day, user_id')
-          .eq('circle_id', circleId)
-          .gte('day', today)
-          .lte('day', addDays(today, 6))
-          .order('day'),
-        supabase
-          .from('shares')
-          .select('*')
-          .eq('circle_id', circleId)
-          .eq('kind', 'spotlight')
-          .eq('period_key', today)
-          .order('created_at'),
-        members(queryClient, circleId),
-      ]);
-      const nameOf = (id: string) => people.find((m) => m.userId === id)?.displayName ?? 'Friend';
-      const week = unwrap(days).map((d) => ({ day: d.day, userId: d.user_id, displayName: nameOf(d.user_id) }));
-      return { today: week.find((d) => d.day === today) ?? null, week, posts: unwrap(posts) };
-    },
+    queryFn: () => fetchSpotlight(queryClient, circleId),
   });
+}
+
+/** The same, for every coop on the home screen (shares useSpotlight's cache). */
+export function useSpotlights(circleIds: string[]): Record<string, Spotlight | undefined> {
+  const queryClient = useQueryClient();
+  const results = useQueries({
+    queries: circleIds.map((id) => ({ queryKey: spotlightKey(id), queryFn: () => fetchSpotlight(queryClient, id) })),
+  });
+  return Object.fromEntries(circleIds.map((id, i) => [id, results[i]?.data]));
 }
 
 // ---------- Birthdays and moments (A3.3) ----------
