@@ -91,7 +91,8 @@ export const mediaPath = (circleId: string, itemId: string, ext: string) => `${c
 
 // ---------- Design v0.3: daily photo + Sunny Sunday (contract change 2026-11-07) ----------
 // Daily photo = a `spotlight` share (period_key 'YYYY-MM-DD'), posted only by that day's
-// spotlight_days person, at most one per circle per day. Decoration: egg_style + body (egg text).
+// spotlight_days person (several per day allowed). Others react via `share_reactions`
+// (share_id, user_id, emoji; same visibility as the share; in Realtime). Decoration: egg_style + body (egg text).
 // Sunday egg = a `sunday` share with recipient_id = my sunday_pairs.receiver_id (period_key ISO week),
 // one per person per circle per week; video (mp4/mov) or voice (m4a) in media_path. The recipient
 // can read it only after sending their own egg that week.
