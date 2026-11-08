@@ -34,18 +34,20 @@ export type Mutation<TVars, TResult = void> = UseMutationResult<TResult, Error, 
 
 export interface ApiSurface {
   // Auth (A1.1)
-  useSession(): { session: Session | null; loading: boolean };
+  /** isNewAccount: true right after sign-up in this app run (drives onboarding). */
+  useSession(): { session: Session | null; loading: boolean; isNewAccount: boolean };
   signUpWithEmail(email: string, password: string): Promise<void>;
   signInWithEmail(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
 
   // Profile (A1.2)
   useMyProfile(): Query<Profile>;
-  useUpdateProfile(): Mutation<ProfileUpdate>;
+  /** `avatarUri`: a local photo to upload as the profile photo (avatars/{user_id}/photo.jpg). */
+  useUpdateProfile(): Mutation<ProfileUpdate & { avatarUri?: string }, Profile>;
 
   // Consent and privacy (A1.2, A4.6)
   useConsent(): Query<Consent>;
-  useUpdateConsent(): Mutation<ConsentUpdate>;
+  useUpdateConsent(): Mutation<ConsentUpdate, Consent>;
   /** `until` null = resume now. */
   usePause(): Mutation<{ until: string | null }>;
   useWhatTheAppSaw(): Query<DailySignal[]>;
@@ -69,7 +71,7 @@ export interface ApiSurface {
   useReact(): Mutation<{ interactionId: string; emoji: string }>;
 
   // Media (A2.3–A2.4). Pickers resolve to a local URI, or null if cancelled.
-  usePhotoPicker(): () => Promise<string | null>;
+  usePhotoPicker(): (options?: { square?: boolean }) => Promise<string | null>;
   useCameraCapture(): () => Promise<string | null>;
   useVoiceRecorder(): VoiceRecorder;
   useMediaUrl(path: string | null): Query<string>;

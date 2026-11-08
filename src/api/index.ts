@@ -62,7 +62,8 @@ export const {
   setHomeLocation,
 } = api;
 
-export { USE_MOCKS } from './config';
+export { HEALTHKIT_ENABLED, USE_MOCKS } from './config';
+export { rememberInviteCode } from './invite';
 // A4.7 demo controls (Developer B handoff); only app/(dev)/demo uses these.
 export { demoKeyConfigured, describeDemoAction, useDemoAction, type DemoAction } from './demo';
 export { ApiProvider } from './provider';

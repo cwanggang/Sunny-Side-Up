@@ -10,8 +10,7 @@ type Enums = Database['public']['Enums'];
 export type { HangoutIdea, Session };
 
 // ---------- Profile & consent ----------
-// `expo_push_token` is omitted: remote push is out of scope (plan.md §3.0).
-export type Profile = Omit<Tables['profiles']['Row'], 'expo_push_token'>;
+export type Profile = Tables['profiles']['Row'];
 export type ProfileUpdate = Partial<Pick<Profile, 'display_name' | 'avatar_path' | 'birthday' | 'timezone'>>;
 export type Consent = Tables['consents']['Row'];
 export type ConsentUpdate = Partial<Pick<Consent, 'location' | 'health' | 'auto_nudges'>>;
@@ -107,20 +106,9 @@ export interface Nudge {
 }
 
 // ---------- Notifications (plan.md §4.1 `notifications` table) ----------
-// TODO: switch to the generated row type once Developer B's `notifications`
-// migration lands in shared/database.types.ts.
-export type NotificationType = 'interaction' | 'nudge' | 'share_open' | 'spotlight' | 'birthday' | 'moment';
-export interface AppNotification {
-  id: string;
-  userId: string;
-  type: NotificationType;
-  circleId: string;
-  targetId: string | null;
-  title: string;
-  body: string;
-  createdAt: string;
-  readAt: string | null;
-}
+export type NotificationType = Enums['notification_type'];
+/** One `notifications` row (own rows only, by RLS). */
+export type AppNotification = Tables['notifications']['Row'];
 
 // ---------- Signals ----------
 export type PermissionState = 'granted' | 'denied' | 'undetermined';
